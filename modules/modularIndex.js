@@ -1,14 +1,14 @@
 // MAIN IMPORTS
-import { setupScene } from './main/scene.js';
-import { setupCamera } from './main/camera.js';
-import { setupMovement } from './main/movement.js';
-import { setupInput } from './main/userInput.js';
+import { setupScene } from '/NexusArcani/main/scene.js';
+import { setupCamera } from '/NexusArcani/main/camera.js';
+import { setupMovement } from '/NexusArcani/main/movement.js';
+import { setupInput } from '/NexusArcani/main/userInput.js';
 
 // NEXUS ROOM IMPORTS
-import { nexusEnvironment } from './nexusRoom/environment.js';
-import { nexusLights } from './nexusRoom/lighting.js';
-import { createNexus } from './nexusRoom/nexusOrb.js';
-import { animateNexusRoom } from './nexusRoom/animation.js';
+import { nexusEnvironment } from '/NexusArcani/nexusRoom/environment.js';
+import { nexusLights } from '/NexusArcani/nexusRoom/lighting.js';
+import { createNexus } from '/NexusArcani/nexusRoom/nexusOrb.js';
+import { animateNexusRoom } from '/NexusArcani/nexusRoom/animation.js';
 
 export const allSetups = {
     main: {

@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { allSetups } from '../modules/modularIndex.js';
+import { allSetups } from '/NexusArcani/modules/main/scene.js';
 
 function init() {
     // Setup core elements

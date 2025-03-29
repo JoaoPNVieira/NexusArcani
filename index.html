@@ -21,26 +21,24 @@
 </body>
 </html> -->
 
-<!-- GITHUB -->
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Three.js Game</title>
-    <style>
-        body { margin: 0; overflow: hidden; }
-        canvas { display: block; }
-    </style>
+    <title>Nexus Arcani</title>
+    <style>body { margin: 0; } canvas { display: block; }</style>
+    <!-- Add this import map FIRST -->
     <script type="importmap">
     {
         "imports": {
-            "three": "https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.module.js"
+            "three": "https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.module.js",
+            "./modules/": "/NexusArcani/modules/"
         }
+    }
     </script>
 </head>
 <body>
-    <script src="script.js" type="module"></script>
+    <!-- Change script type to module -->
+    <script type="module" src="/NexusArcani/script.js"></script>
 </body>
 </html>
