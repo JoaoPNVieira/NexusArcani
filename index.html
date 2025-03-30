@@ -27,18 +27,16 @@
     <meta charset="UTF-8">
     <title>Nexus Arcani</title>
     <style>body { margin: 0; } canvas { display: block; }</style>
-    <!-- Add this import map FIRST -->
     <script type="importmap">
     {
         "imports": {
             "three": "https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.module.js",
-            "./modules/": "/NexusArcani/modules/"
+            "./modules/": "./modules/"
         }
     }
     </script>
 </head>
 <body>
-    <!-- Change script type to module -->
-    <script type="module" src="/NexusArcani/script.js"></script>
+    <script type="module" src="./script.js"></script>
 </body>
 </html>
