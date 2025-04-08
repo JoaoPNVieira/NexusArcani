@@ -9,18 +9,18 @@ export function nexusEnvironment(scene) {
     // Texture paths
     const textures = {
         floor: {
-            color: 'textures/surfaces/wood/old_planks/color.jpg',
-            displacement: 'textures/surfaces/wood/old_planks/disp.png',
-            occ: 'textures/surfaces/wood/old_planks/occ.jpg',
-            normal: 'textures/surfaces/wood/old_planks/normal.jpg',
-            roughness: 'textures/surfaces/wood/old_planks/roughness.jpg'
+            color: './textures/surfaces/wood/old_planks/color.jpg',
+            displacement: './textures/surfaces/wood/old_planks/disp.png',
+            occ: './textures/surfaces/wood/old_planks/occ.jpg',
+            normal: './textures/surfaces/wood/old_planks/normal.jpg',
+            roughness: './textures/surfaces/wood/old_planks/roughness.jpg'
         },
         walls: {
-            color: 'textures/surfaces/stone/walls_3/color.jpg',
-            occ: 'textures/surfaces/stone/walls_3/occ.jpg',
-            height: 'textures/surfaces/stone/walls_3/height.png',
-            normal: 'textures/surfaces/stone/walls_3/normal.jpg',
-            roughness: 'textures/surfaces/stone/walls_/roughness.jpg'
+            color: './textures/surfaces/stone/walls_3/color.jpg',
+            occ: './textures/surfaces/stone/walls_3/occ.jpg',
+            height: './textures/surfaces/stone/walls_3/height.png',
+            normal: './textures/surfaces/stone/walls_3/normal.jpg',
+            roughness: './textures/surfaces/stone/walls_/roughness.jpg'
         }
     };
 
