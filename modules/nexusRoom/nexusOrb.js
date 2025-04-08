@@ -6,18 +6,18 @@ export function createNexus(radius = 6) {
     
     const textures = {
         star: {
-            map: 'textures/surfaces/nexus/lava/color.jpg',
-            displacement: 'textures/surfaces/nexus/lava/displacement.jpg',
-            emission: 'textures/surfaces/nexus/lava/emission.jpg',
-            normal: 'textures/surfaces/nexus/lava/normalGL.jpg',
-            roughness: 'textures/surfaces/nexus/lava/roughness.jpg'
+            map: './textures/surfaces/nexus/lava/color.jpg',
+            displacement: './textures/surfaces/nexus/lava/displacement.jpg',
+            emission: './textures/surfaces/nexus/lava/emission.jpg',
+            normal: './textures/surfaces/nexus/lava/normalGL.jpg',
+            roughness: './textures/surfaces/nexus/lava/roughness.jpg'
         },
         rings: {
-            color: 'textures/surfaces/nexus/water2/color.jpg',
-            displacement: 'textures/surfaces/nexus/water2/disp.png',
-            occ: 'textures/surfaces/nexus/water2/occ.jpg',
-            normal: 'textures/surfaces/nexus/water2/normal.jpg',
-            specular: 'textures/surfaces/nexus/water2/spec.jpg'
+            color: './textures/surfaces/nexus/water2/color.jpg',
+            displacement: './textures/surfaces/nexus/water2/disp.png',
+            occ: './textures/surfaces/nexus/water2/occ.jpg',
+            normal: './textures/surfaces/nexus/water2/normal.jpg',
+            specular: './textures/surfaces/nexus/water2/spec.jpg'
         }
     };
 
