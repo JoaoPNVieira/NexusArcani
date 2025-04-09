@@ -1,4 +1,3 @@
-//script.js:
 import * as THREE from 'three';
 import { allSetups } from './modules/modularIndex.js';
 

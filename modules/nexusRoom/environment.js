@@ -20,7 +20,7 @@ export function nexusEnvironment(scene) {
             occ: './textures/surfaces/stone/walls_3/occ.jpg',
             height: './textures/surfaces/stone/walls_3/height.png',
             normal: './textures/surfaces/stone/walls_3/normal.jpg',
-            roughness: './textures/surfaces/stone/walls_/roughness.jpg'
+            roughness: './textures/surfaces/stone/walls_3/roughness.jpg'
         }
     };
 
