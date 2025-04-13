@@ -1,4 +1,6 @@
 import * as THREE from 'three';
+// import { createSquareFrame } from '../main/frame.js';
+// import { createPortal } from '../main/portal.js';
 
 export function nexusEnvironment(scene) {
     const ROOM_SIZE = 100;
@@ -6,7 +8,7 @@ export function nexusEnvironment(scene) {
     const FLOOR_Y = -ROOM_HEIGHT / 2;
     const textureLoader = new THREE.TextureLoader();
 
-    // Texture paths
+    // Textures configuration
     const textures = {
         floor: {
             color: './textures/surfaces/wood/old_planks/color.jpg',
@@ -24,25 +26,19 @@ export function nexusEnvironment(scene) {
         }
     };
 
-    // Load textures with error handling
+    // Texture loader with error handling
     const loadTextures = async (textureSet) => {
         const loaded = {};
         for (const [key, path] of Object.entries(textureSet)) {
             try {
                 const texture = await new Promise((resolve, reject) => {
-                    textureLoader.load(
-                        path,
-                        resolve,
-                        undefined,
-                        () => reject(new Error(`Failed to load ${path}`))
-                    );
+                    textureLoader.load(path, resolve, undefined, () => reject(new Error(`Failed to load ${path}`)));
                 });
                 texture.wrapS = THREE.RepeatWrapping;
                 texture.wrapT = THREE.RepeatWrapping;
                 loaded[key] = texture;
             } catch (error) {
                 console.warn(error.message);
-                // Create fallback texture
                 const canvas = document.createElement('canvas');
                 canvas.width = canvas.height = 4;
                 const ctx = canvas.getContext('2d');
@@ -54,7 +50,7 @@ export function nexusEnvironment(scene) {
         return loaded;
     };
 
-    // Create materials
+    // Create materials for room
     const createMaterials = async () => {
         const [floorTex, wallsTex] = await Promise.all([
             loadTextures(textures.floor),
@@ -64,13 +60,12 @@ export function nexusEnvironment(scene) {
         // Configure texture repeats
         const floorRepeat = ROOM_SIZE / 10;
         const wallRepeat = ROOM_HEIGHT / 10;
-        
         Object.values(floorTex).forEach(t => t.repeat.set(floorRepeat, floorRepeat));
         Object.values(wallsTex).forEach(t => t.repeat.set(floorRepeat, wallRepeat));
 
-        // Wall materials (6 sides of box)
+        // Wall materials (6 sides)
         const wallMaterials = [
-            new THREE.MeshStandardMaterial({ // Right
+            new THREE.MeshStandardMaterial({
                 map: wallsTex.color,
                 normalMap: wallsTex.normal,
                 roughnessMap: wallsTex.roughness,
@@ -79,7 +74,7 @@ export function nexusEnvironment(scene) {
                 displacementScale: 0.1,
                 side: THREE.BackSide
             }),
-            new THREE.MeshStandardMaterial({ // Left
+            new THREE.MeshStandardMaterial({
                 map: wallsTex.color,
                 normalMap: wallsTex.normal,
                 roughnessMap: wallsTex.roughness,
@@ -88,7 +83,7 @@ export function nexusEnvironment(scene) {
                 displacementScale: 0.1,
                 side: THREE.BackSide
             }),
-            new THREE.MeshStandardMaterial({ // Top (ceiling)
+            new THREE.MeshStandardMaterial({
                 map: wallsTex.color,
                 normalMap: wallsTex.normal,
                 roughnessMap: wallsTex.roughness,
@@ -97,11 +92,11 @@ export function nexusEnvironment(scene) {
                 displacementScale: 0.1,
                 side: THREE.BackSide
             }),
-            new THREE.MeshBasicMaterial({ // Bottom (floor - handled separately)
+            new THREE.MeshBasicMaterial({
                 transparent: true,
                 opacity: 0
             }),
-            new THREE.MeshStandardMaterial({ // Front
+            new THREE.MeshStandardMaterial({
                 map: wallsTex.color,
                 normalMap: wallsTex.normal,
                 roughnessMap: wallsTex.roughness,
@@ -110,7 +105,7 @@ export function nexusEnvironment(scene) {
                 displacementScale: 0.1,
                 side: THREE.BackSide
             }),
-            new THREE.MeshStandardMaterial({ // Back
+            new THREE.MeshStandardMaterial({
                 map: wallsTex.color,
                 normalMap: wallsTex.normal,
                 roughnessMap: wallsTex.roughness,
@@ -136,11 +131,13 @@ export function nexusEnvironment(scene) {
         return { wallMaterials, floorMaterial };
     };
 
-    // Create environment
+    // Create the room environment
     createMaterials().then(({ wallMaterials, floorMaterial }) => {
         // Room box
-        const roomGeometry = new THREE.BoxGeometry(ROOM_SIZE, ROOM_HEIGHT, ROOM_SIZE);
-        const room = new THREE.Mesh(roomGeometry, wallMaterials);
+        const room = new THREE.Mesh(
+            new THREE.BoxGeometry(ROOM_SIZE, ROOM_HEIGHT, ROOM_SIZE),
+            wallMaterials
+        );
         scene.add(room);
 
         // Floor
@@ -152,13 +149,139 @@ export function nexusEnvironment(scene) {
         floor.position.y = FLOOR_Y;
         scene.add(floor);
 
-        // Grid helper
-        const grid = new THREE.GridHelper(ROOM_SIZE, ROOM_SIZE / 2, 0x333333, 0x222222);
-        grid.material.transparent = true;
-        grid.material.opacity = 0.5;
-        grid.position.y = FLOOR_Y + 0.02;
-        scene.add(grid);
+        // Gate parameters
+        const gateSize = { width: 20, height: 30, depth: 0.5, thickness: 1.5 };
+        const gateVerticalPos = FLOOR_Y + ROOM_HEIGHT/4;
+        const gateOffset = ROOM_SIZE/2 - 1; // 1 unit from wall
+        const gateSpacing = ROOM_SIZE/3; // Space between gates
+
+        // Create all 8 gates (2 per wall)
+        // Front wall (Z negative) - Blue portals
+        scene.add(createGate(
+            { x: -gateSpacing, y: gateVerticalPos, z: -gateOffset },
+            gateSize,
+            0x333333,
+            0x0066ff,
+            Math.PI
+        ));
+        scene.add(createGate(
+            { x: gateSpacing, y: gateVerticalPos, z: -gateOffset },
+            gateSize,
+            0x333333,
+            0x0066ff,
+            Math.PI
+        ));
+
+        // Back wall (Z positive) - Green portals
+        scene.add(createGate(
+            { x: -gateSpacing, y: gateVerticalPos, z: gateOffset },
+            gateSize,
+            0x333333,
+            0x00ff66,
+            0
+        ));
+        scene.add(createGate(
+            { x: gateSpacing, y: gateVerticalPos, z: gateOffset },
+            gateSize,
+            0x333333,
+            0x00ff66,
+            0
+        ));
+
+        // Left wall (X negative) - Orange portals
+        scene.add(createGate(
+            { x: -gateOffset, y: gateVerticalPos, z: -gateSpacing },
+            gateSize,
+            0x333333,
+            0xff6600,
+            Math.PI/2
+        ));
+        scene.add(createGate(
+            { x: -gateOffset, y: gateVerticalPos, z: gateSpacing },
+            gateSize,
+            0x333333,
+            0xff6600,
+            Math.PI/2
+        ));
+
+        // Right wall (X positive) - Purple portals
+        scene.add(createGate(
+            { x: gateOffset, y: gateVerticalPos, z: -gateSpacing },
+            gateSize,
+            0x333333,
+            0xcc00ff,
+            -Math.PI/2
+        ));
+        scene.add(createGate(
+            { x: gateOffset, y: gateVerticalPos, z: gateSpacing },
+            gateSize,
+            0x333333,
+            0xcc00ff,
+            -Math.PI/2
+        ));
     });
 
-    return { ROOM_SIZE, ROOM_HEIGHT, FLOOR_Y };
+    // Gate creation function
+    function createGate(position, size, frameColor, portalColor, rotationY) {
+        const group = new THREE.Group();
+        group.position.set(position.x, position.y, position.z);
+        group.rotation.y = rotationY;
+
+        // Create three-sided frame (top, left, right)
+        const frameMaterial = new THREE.MeshStandardMaterial({ 
+            color: frameColor,
+            side: THREE.DoubleSide
+        });
+
+        // Top beam
+        const topBeam = new THREE.Mesh(
+            new THREE.BoxGeometry(size.width, size.thickness, size.depth),
+            frameMaterial
+        );
+        topBeam.position.y = size.height/2 - size.thickness/2;
+        group.add(topBeam);
+
+        // Left beam
+        const leftBeam = new THREE.Mesh(
+            new THREE.BoxGeometry(size.thickness, size.height - size.thickness, size.depth),
+            frameMaterial
+        );
+        leftBeam.position.x = -size.width/2 + size.thickness/2;
+        leftBeam.position.y = -size.thickness/2;
+        group.add(leftBeam);
+
+        // Right beam
+        const rightBeam = new THREE.Mesh(
+            new THREE.BoxGeometry(size.thickness, size.height - size.thickness, size.depth),
+            frameMaterial
+        );
+        rightBeam.position.x = size.width/2 - size.thickness/2;
+        rightBeam.position.y = -size.thickness/2;
+        group.add(rightBeam);
+
+        // Create full-height portal
+        const portalMaterial = new THREE.MeshStandardMaterial({ 
+            color: portalColor,
+            transparent: true,
+            opacity: 0.9,
+            emissive: portalColor,
+            emissiveIntensity: 0.7,
+            side: THREE.DoubleSide
+        });
+        
+        const portalWidth = size.width - size.thickness * 2;
+        const portalHeight = size.height - size.thickness; // Full height minus top beam
+        
+        const portal = new THREE.Mesh(
+            new THREE.PlaneGeometry(portalWidth, portalHeight),
+            portalMaterial
+        );
+        portal.position.z = size.depth/2 + 0.1;
+        portal.position.y = -size.thickness/2; // Align with bottom
+        group.add(portal);
+
+        return group;
+    }
+
+    return { ROOM_SIZE, FLOOR_Y };
 }

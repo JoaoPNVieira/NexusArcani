@@ -3,6 +3,7 @@
     "@types/three": "^0.174.0"
   },
   "dependencies": {
+    "@dimforge/rapier3d-compat": "^0.15.1",
     "three": "^0.174.0",
     "three-csg-ts": "^3.2.0"
   }
