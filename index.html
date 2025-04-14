@@ -3,14 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <title>Nexus Arcani</title>
-    <!-- Estilos básicos para garantir que a canvas ocupa toda a janela -->
+
+    <!-- Estilos básicos: garante que a janela ocupa toda a janela -->
     <style>body { margin: 0; } canvas { display: block; }</style>
 
-    <!-- Adiciona um ícone personalizado à aba do navegador -->
+    <!-- Icone personalizado na aba do navegador -->
     <link rel="icon" href="./assets/NexusArcani.ico" type="image/x-icon">
-
-    <!-- Biblioteca externa para efeitos avançados de pós-processamento -->
-    <script type="module" src="https://cdn.jsdelivr.net/npm/postprocessing@latest/build/postprocessing.min.js"></script>
 
     <!-- 
         Importmap:
@@ -23,17 +21,14 @@
         "imports": {
             "three": "https://cdn.jsdelivr.net/npm/three@latest/build/three.module.js",
             "three/examples/jsm/": "https://cdn.jsdelivr.net/npm/three@latest/examples/jsm/",
-            "postprocessing": "https://cdn.jsdelivr.net/npm/postprocessing@latest/build/postprocessing.min.js",
             "./modules/": "./modules/"
         }
     }
     </script>
 </head>
 <body>
-    <!-- 
-        Este ficheiro será responsável pela lógica principal do projeto.
-        Carrega o ficheiro script.js como um módulo ES6.
-    -->
+
+    <!-- Este ficheiro será responsável pela lógica principal do projeto -->
     <script type="module" src="./script.js"></script>
 </body>
 </html>
