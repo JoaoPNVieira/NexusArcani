@@ -5,7 +5,6 @@ export function createGate(position, size, frameMaterial, portalMaterial, portal
     group.position.set(position.x, position.y, position.z);
     group.rotation.y = rotationY;
 
-    // Frame construction (unchanged)
     const topBeam = new THREE.Mesh(
         new THREE.BoxGeometry(size.width, size.thickness, size.depth),
         frameMaterial
@@ -29,18 +28,15 @@ export function createGate(position, size, frameMaterial, portalMaterial, portal
     rightBeam.position.y = -size.thickness/2;
     group.add(rightBeam);
 
-    // Create portal with proper geometry for animation
     const portalWidth = size.width - size.thickness * 2;
     const portalHeight = size.height - size.thickness;
     
-    // Higher segment count for smooth waves
     const portalGeometry = new THREE.PlaneGeometry(
         portalWidth, 
         portalHeight, 
-        32, 32 // Width and height segments
+        32, 32
     );
     
-    // Store original positions for animation
     const originalPositions = portalGeometry.attributes.position.clone();
     portalGeometry.userData = { originalPositions };
 
@@ -53,7 +49,6 @@ export function createGate(position, size, frameMaterial, portalMaterial, portal
     portal.position.z = size.depth/2 + 0.1;
     portal.position.y = -size.thickness/2;
     
-    // Animation properties
     portal.userData = {
         time: 0,
         speed: 0.5,
@@ -73,7 +68,6 @@ export function createGate(position, size, frameMaterial, portalMaterial, portal
             
             positions.needsUpdate = true;
             
-            // Texture animation
             portal.material.map.offset.y += delta * 0.05;
             if (portal.material.normalMap) {
                 portal.material.normalMap.offset.y += delta * 0.05;

@@ -1,9 +1,8 @@
 import * as THREE from 'three';
 
-export function setupInput(params) {  // Changed to single parameter object
+export function setupInput(params) { 
     let isPointerLocked = false;
 
-    // Mouse movement handler (UNCHANGED) (orbits controls addons)
     const onMouseMove = (e) => {
         if (isPointerLocked && params.camera.yawObject && params.camera.pitchObject) {
             const sensitivity = 0.002;
@@ -16,7 +15,6 @@ export function setupInput(params) {  // Changed to single parameter object
         }
     };
 
-    // Pointer lock controls (UNCHANGED)
     params.renderer.domElement.addEventListener('click', () => {
         params.renderer.domElement.requestPointerLock().catch(err => {
             console.error("Pointer lock failed:", err);
@@ -32,7 +30,6 @@ export function setupInput(params) {  // Changed to single parameter object
         }
     });
 
-    // Keyboard controls - FIXED VERSION
     document.addEventListener('keydown', (e) => {
         switch (e.code) {
             case 'KeyW': params.moveState.forward = true; break;

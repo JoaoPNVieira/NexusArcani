@@ -1,4 +1,3 @@
-// modules/portal.js
 import * as THREE from 'three';
 
 export function createPortal(size, color, options = {}) {

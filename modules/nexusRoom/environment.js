@@ -37,7 +37,6 @@ export function nexusEnvironment(scene) {
             height: './textures/surfaces/stone/walls_2/height.png',
             normal: './textures/surfaces/stone/walls_2/normal.png',
             roughness: './textures/surfaces/stone/walls_2/roughness.png',
-            // metallic: './textures/surfaces/kintsugi/metallic.png',
         },
         gold: {
             color: './textures/surfaces/metals/gold_foil/color.png',
@@ -192,13 +191,12 @@ export function nexusEnvironment(scene) {
             emissiveIntensity: 2,
             transparent: true,
             opacity: 0.9,
-            roughness: 50, // Your preferred high roughness
+            roughness: 50,
             metalness: 1.2,
             side: THREE.DoubleSide,
-            wireframe: false // Set to true for debugging mesh deformation
+            wireframe: false 
         });
 
-        // Make sure textures can repeat
         goldTex.color.wrapS = goldTex.color.wrapT = THREE.RepeatWrapping;
         goldTex.normal.wrapS = goldTex.normal.wrapT = THREE.RepeatWrapping;
         goldTex.color.repeat.set(2, 2);
@@ -340,13 +338,12 @@ export function nexusEnvironment(scene) {
         const secondGatePos = firstGatePos + gateWidth + gapSize;
         const gatePositions = [firstGatePos, secondGatePos];
 
-        // METAL GATES - DEEPER TONES
         scene.add(createGate(
             { x: gatePositions[0], y: gateVerticalPos, z: -gateOffset },
             gateSize,
             frameMaterial,
             goldPortalMaterial,
-            0x6C3082  ,  // Dark antique gold (RGB: 212, 175, 55)
+            0x6C3082,
             0
         ));
 
@@ -355,7 +352,7 @@ export function nexusEnvironment(scene) {
             gateSize,
             frameMaterial,
             goldPortalMaterial,
-            0x5A5A58,  // Oxidized silver (RGB: 90, 90, 88)
+            0x5A5A58,
             0
         ));
 
@@ -364,17 +361,16 @@ export function nexusEnvironment(scene) {
             gateSize,
             frameMaterial,
             goldPortalMaterial,
-            0xB08D57,  // Weathered bronze (RGB: 176, 141, 87)
+            0xB08D57,
             Math.PI
         ));
 
-        // GEMSTONE GATES - SATURATED DARKS
         scene.add(createGate(
             { x: gatePositions[1], y: gateVerticalPos, z: gateOffset },
             gateSize,
             frameMaterial,
             goldPortalMaterial,
-            0x0D3B8E,  // Deep sapphire (RGB: 13, 59, 142)
+            0x0D3B8E,
             Math.PI
         ));
 
@@ -383,7 +379,7 @@ export function nexusEnvironment(scene) {
             gateSize,
             frameMaterial,
             goldPortalMaterial,
-            0x7D0A1C,  // Blood ruby (RGB: 125, 10, 28)
+            0x7D0A1C,
             Math.PI/2
         ));
 
@@ -392,17 +388,16 @@ export function nexusEnvironment(scene) {
             gateSize,
             frameMaterial,
             goldPortalMaterial,
-            0x0A5F38,  // Forest emerald (RGB: 10, 95, 56)
+            0x0A5F38,
             Math.PI/2
         ));
 
-        // SPECIAL GATES
         scene.add(createGate(
             { x: gateOffset, y: gateVerticalPos, z: gatePositions[0] },
             gateSize,
             frameMaterial,
             goldPortalMaterial,
-            0x4B0082,  // Diamond blue-white (RGB: 185, 242, 255)
+            0x4B0082,
             -Math.PI/2
         ));
 
@@ -411,7 +406,7 @@ export function nexusEnvironment(scene) {
             gateSize,
             frameMaterial,
             goldPortalMaterial,
-            0x0A0A0C,  // True ebony (RGB: 10, 10, 12)
+            0x0A0A0C,
             -Math.PI/2
         ));
         

@@ -4,8 +4,9 @@ import * as THREE from 'three';
  * Configura o sistema de câmara para o ambiente 3D
  * @param {THREE.Scene} scene - O objeto de cena Three.js
  * @param {number} FLOOR_Y - Posição Y do plano do chão
- * @returns {Object} Contém a câmara e os seus elementos de controlo
+ * @returns {Object} - Contém a câmara e os seus elementos de controlo
  */
+
 export function setupCamera(scene, FLOOR_Y) {
     // Cria uma câmara perspetiva com valores padrão
     const camera = new THREE.PerspectiveCamera(

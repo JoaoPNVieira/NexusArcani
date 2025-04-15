@@ -22,7 +22,6 @@ export function animateNexusRoom(params) {
         moveState
     } = restParams;
 
-    // For smooth movement
     const movementDamping = 0.2;
     const currentVelocity = new THREE.Vector3();
 
@@ -32,10 +31,8 @@ export function animateNexusRoom(params) {
         
         requestAnimationFrame(render);
         
-        // Animate all gates in the scene
         scene.traverse(object => {
             if (object.userData?.isGate) {
-                // Find the portal mesh (it's the last child)
                 const portal = object.children[object.children.length - 1];
                 if (portal.userData?.update) {
                     portal.userData.update(delta);
@@ -43,12 +40,10 @@ export function animateNexusRoom(params) {
             }
         });
 
-        // Nexus animation (if exists)
         if (nexus?.userData?.animate) {
             nexus.userData.animate(elapsedTime);
         }
 
-        // ====== Rest of your existing physics/movement code ====== //
         verticalVelocity -= restParams.GRAVITY;
         cameraRig.position.y += verticalVelocity;
 
@@ -64,7 +59,6 @@ export function animateNexusRoom(params) {
             }
         }
 
-        // Movement code (unchanged)
         const direction = new THREE.Vector3();
         const cameraDirection = new THREE.Vector3();
         camera.getWorldDirection(cameraDirection);
@@ -88,7 +82,6 @@ export function animateNexusRoom(params) {
             currentVelocity.lerp(new THREE.Vector3(), movementDamping);
         }
 
-        // Boundary constraints
         const boundary = ROOM_SIZE / 2 - 0.5;
         cameraRig.position.x = THREE.MathUtils.clamp(cameraRig.position.x, -boundary, boundary);
         cameraRig.position.z = THREE.MathUtils.clamp(cameraRig.position.z, -boundary, boundary);

@@ -36,7 +36,6 @@ export function createNexus(radius = 6) {
         }
     }
 
-    // Enhanced star core material with brighter emission
     const starCore = new THREE.Mesh(
         new THREE.SphereGeometry(radius, 128, 128),
         new THREE.MeshStandardMaterial({
@@ -56,9 +55,7 @@ export function createNexus(radius = 6) {
     );
     nexusGroup.add(starCore);
 
-    // Add bloom effect target marker
     starCore.layers.enable(1); 
-
     const createWaterRing = (distance, thickness, speed) => {
         const adjustedThickness = thickness * 1.5;
         
@@ -119,7 +116,6 @@ export function createNexus(radius = 6) {
         starCore.rotation.y = time * 0.15;
         starCore.rotation.z = Math.sin(time * 0.25) * 0.08;
         
-        // Add emissive pulse effect
         starCore.material.emissiveIntensity = 4.0 + Math.sin(time * 2) * 1.5;
         
         rings.forEach((ring, index) => {
