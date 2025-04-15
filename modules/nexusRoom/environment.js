@@ -7,7 +7,6 @@ export function nexusEnvironment(scene) {
     const FLOOR_Y = -ROOM_HEIGHT / 2;
     const textureLoader = new THREE.TextureLoader();
 
-    // Textures configuration
     const textures = {
         floor: {
             color: './textures/surfaces/wood/old_planks/color.jpg',
@@ -24,39 +23,46 @@ export function nexusEnvironment(scene) {
             roughness: './textures/surfaces/stone/walls_3/roughness.jpg'
         },
         window: {
-            color: './textures/surfaces/glass/color_window/color.jpg',
-            occ: './textures/surfaces/glass/color_window/occ.jpg',
-            height: './textures/surfaces/glass/color_window/height.png',
-            normal: './textures/surfaces/glass/color_window/normal.jpg',
-            roughness: './textures/surfaces/glass/color_window/roughness.jpg',
-            metalness: './textures/surfaces/glass/color_window/metallic.jpg',
-            opacity: './textures/surfaces/glass/color_window/opacity.jpg'
+            color: './textures/surfaces/glass/blue_window/color.jpg',
+            occ: './textures/surfaces/glass/blue_window/occ.jpg',
+            height: './textures/surfaces/glass/blue_window/height.png',
+            normal: './textures/surfaces/glass/blue_window/normal.jpg',
+            roughness: './textures/surfaces/glass/blue_window/roughness.jpg',
+            metallic: './textures/surfaces/glass/blue_window/metallic.jpg',
+            opacity: './textures/surfaces/glass/blue_window/opacity.jpg'
+        },
+        frame: {
+            color: './textures/surfaces/stone/walls_2/color.png',
+            occ: './textures/surfaces/stone/walls_2/occ.png',
+            height: './textures/surfaces/stone/walls_2/height.png',
+            normal: './textures/surfaces/stone/walls_2/normal.png',
+            roughness: './textures/surfaces/stone/walls_2/roughness.png',
+            // metallic: './textures/surfaces/kintsugi/metallic.png',
         },
         gold: {
-            color: './textures/surfaces/metals/gold-foil/color.jpg',
-            occ: './textures/surfaces/metals/gold-foil/occ.jpg',
-            height: './textures/surfaces/metals/gold-foil/height.png',
-            normal: './textures/surfaces/metals/gold-foil/normal.jpg',
-            roughness: './textures/surfaces/metals/gold-foil/roughness.jpg',
-            metalness: './textures/surfaces/metals/gold-foil/metallic.jpg'
+            color: './textures/surfaces/metals/gold_foil/color.png',
+            occ: './textures/surfaces/metals/gold_foil/occ.png',
+            height: './textures/surfaces/metals/gold_foil/height.png',
+            normal: './textures/surfaces/metals/gold_foil/normal.png',
+            roughness: './textures/surfaces/metals/gold_foil/roughness.png',
+            metalness: './textures/surfaces/metals/gold_foil/metallic.png'
         },
         skirt: {
-            color: './textures/surfaces/stone/walls_2/color.jpg',
-            occ: './textures/surfaces/stone/walls_2/occ.jpg',
+            color: './textures/surfaces/stone/walls_2/color.png',
+            occ: './textures/surfaces/stone/walls_2/occ.png',
             height: './textures/surfaces/stone/walls_2/height.png',
-            normal: './textures/surfaces/stone/walls_2/normal.jpg',
-            roughness: './textures/surfaces/stone/walls_2/roughness.jpg'
+            normal: './textures/surfaces/stone/walls_2/normal.png',
+            roughness: './textures/surfaces/stone/walls_2/roughness.png'
         },
         columns: {
-            color: './textures/surfaces/stone/columns1/color.jpg',
-            occ: './textures/surfaces/stone/columns1/occ.jpg',
-            height: './textures/surfaces/stone/columns1/height.png',
-            normal: './textures/surfaces/stone/columns1/normal.jpg',
-            roughness: './textures/surfaces/stone/columns1/roughness.jpg'
+            color: './textures/surfaces/stone/columns2/color.jpg',
+            occ: './textures/surfaces/stone/columns2/occ.jpg',
+            height: './textures/surfaces/stone/columns2/height.png',
+            normal: './textures/surfaces/stone/columns2/normal.jpg',
+            roughness: './textures/surfaces/stone/columns2/roughness.jpg'
         }
     };
 
-    // Texture loader with error handling
     const loadTextures = async (textureSet) => {
         const loaded = {};
         for (const [key, path] of Object.entries(textureSet)) {
@@ -80,18 +86,17 @@ export function nexusEnvironment(scene) {
         return loaded;
     };
 
-    // Create materials for room
     const createMaterials = async () => {
-        const [floorTex, wallsTex, windowTex, goldTex, skirtTex, columnsTex] = await Promise.all([
+        const [floorTex, wallsTex, windowTex, frameTex, goldTex, skirtTex, columnsTex] = await Promise.all([
             loadTextures(textures.floor),
             loadTextures(textures.walls),
             loadTextures(textures.window),
+            loadTextures(textures.frame),
             loadTextures(textures.gold),
             loadTextures(textures.skirt),
             loadTextures(textures.columns)
         ]);
 
-        // Configure texture repeats
         const floorRepeat = ROOM_SIZE / 10;
         const wallRepeat = ROOM_HEIGHT / 10;
         const goldRepeat = 2;
@@ -104,7 +109,6 @@ export function nexusEnvironment(scene) {
         Object.values(skirtTex).forEach(t => t.repeat.set(skirtRepeat, skirtRepeat));
         Object.values(columnsTex).forEach(t => t.repeat.set(columnsRepeat, columnsRepeat));
 
-        // Wall materials (6 sides)
         const wallMaterials = [
             new THREE.MeshStandardMaterial({
                 map: wallsTex.color,
@@ -157,7 +161,6 @@ export function nexusEnvironment(scene) {
             })
         ];
 
-        // Floor material
         const floorMaterial = new THREE.MeshStandardMaterial({
             map: floorTex.color,
             normalMap: floorTex.normal,
@@ -169,50 +172,65 @@ export function nexusEnvironment(scene) {
             metalness: 0.2
         });
 
-        // Window material
         const windowMaterial = new THREE.MeshStandardMaterial({
             map: windowTex.color,
             normalMap: windowTex.normal,
             roughnessMap: windowTex.roughness,
-            metalnessMap: windowTex.metalness,
             alphaMap: windowTex.opacity,
-            transparent: true,
+            transparent: false,
             side: THREE.DoubleSide,
-            emissive: 0xffffff,
-            emissiveIntensity: 0.5
+            emissive: 0x011635,
+            emissiveIntensity: 0.4
         });
 
-        // Gold material for gates
-        const goldMaterial = new THREE.MeshStandardMaterial({
+        const goldPortalMaterial = new THREE.MeshStandardMaterial({
             map: goldTex.color,
             normalMap: goldTex.normal,
             roughnessMap: goldTex.roughness,
             metalnessMap: goldTex.metalness,
-            displacementMap: goldTex.height,
-            displacementScale: 0.1,
-            metalness: 1.0,
-            roughness: 0.3
+            emissive: 0xffff00,
+            emissiveIntensity: 2,
+            transparent: true,
+            opacity: 0.9,
+            roughness: 50, // Your preferred high roughness
+            metalness: 1.2,
+            side: THREE.DoubleSide,
+            wireframe: false // Set to true for debugging mesh deformation
         });
 
-        // Skirt material
+        // Make sure textures can repeat
+        goldTex.color.wrapS = goldTex.color.wrapT = THREE.RepeatWrapping;
+        goldTex.normal.wrapS = goldTex.normal.wrapT = THREE.RepeatWrapping;
+        goldTex.color.repeat.set(2, 2);
+        goldTex.normal.repeat.set(2, 2);
+
+        const frameMaterial = new THREE.MeshStandardMaterial({
+            map: frameTex.color,
+            normalMap: frameTex.normal,
+            roughnessMap: frameTex.roughness,
+            metalnessMap: frameTex.metallic,
+            aoMap: frameTex.occ,
+            displacementMap: frameTex.height,
+            displacementScale: 0
+        });
+
         const skirtMaterial = new THREE.MeshStandardMaterial({
             map: skirtTex.color,
             normalMap: skirtTex.normal,
             roughnessMap: skirtTex.roughness,
             displacementMap: skirtTex.height,
             displacementScale: 0.1,
-            roughness: 0.7,
+            roughness: 2,
             metalness: 0.1
         });
 
-        // Column material
         const columnMaterial = new THREE.MeshStandardMaterial({
             map: columnsTex.color,
             normalMap: columnsTex.normal,
             roughnessMap: columnsTex.roughness,
             displacementMap: columnsTex.height,
-            displacementScale: 0.1,
-            roughness: 0.6,
+            displacementScale: 3,
+            roughness: 10,
             metalness: 0.2
         });
 
@@ -220,29 +238,28 @@ export function nexusEnvironment(scene) {
             wallMaterials, 
             floorMaterial, 
             windowMaterial,
-            goldMaterial,
+            goldPortalMaterial,
+            frameMaterial,
             skirtMaterial,
             columnMaterial
         };
     };
 
-    // Create the room environment
     createMaterials().then(({ 
         wallMaterials, 
         floorMaterial, 
         windowMaterial,
-        goldMaterial,
+        goldPortalMaterial,
+        frameMaterial,
         skirtMaterial,
         columnMaterial
     }) => {
-        // Room box
         const room = new THREE.Mesh(
             new THREE.BoxGeometry(ROOM_SIZE, ROOM_HEIGHT, ROOM_SIZE),
             wallMaterials
         );
         scene.add(room);
 
-        // Floor
         const floor = new THREE.Mesh(
             new THREE.PlaneGeometry(ROOM_SIZE, ROOM_SIZE),
             floorMaterial
@@ -251,13 +268,11 @@ export function nexusEnvironment(scene) {
         floor.position.y = FLOOR_Y;
         scene.add(floor);
 
-        // ========== TEXTURED WALL SKIRTS ==========
         const skirtHeight = 5;
         const skirtDepth = 0.8;
         const skirtOffset = 0.1;
         const wallLength = ROOM_SIZE - 2 * skirtDepth;
 
-        // Helper function to create skirt segments
         const createWallSkirt = (width, height, depth, position, rotation) => {
             const skirt = new THREE.Mesh(
                 new THREE.BoxGeometry(width, height, depth),
@@ -268,22 +283,18 @@ export function nexusEnvironment(scene) {
             return skirt;
         };
 
-        // Position skirts along all walls
         const skirtY = FLOOR_Y + skirtHeight/2;
         
-        // Front wall (Z negative)
         scene.add(createWallSkirt(
             wallLength, skirtHeight, skirtDepth,
             new THREE.Vector3(0, skirtY, -ROOM_SIZE/2 + skirtDepth/2 + skirtOffset)
         ));
         
-        // Back wall (Z positive)
         scene.add(createWallSkirt(
             wallLength, skirtHeight, skirtDepth,
             new THREE.Vector3(0, skirtY, ROOM_SIZE/2 - skirtDepth/2 - skirtOffset)
         ));
         
-        // Left wall (X negative)
         const leftSkirt = createWallSkirt(
             wallLength, skirtHeight, skirtDepth,
             new THREE.Vector3(-ROOM_SIZE/2 + skirtDepth/2 + skirtOffset, skirtY, 0)
@@ -291,7 +302,6 @@ export function nexusEnvironment(scene) {
         leftSkirt.rotation.y = Math.PI/2;
         scene.add(leftSkirt);
         
-        // Right wall (X positive)
         const rightSkirt = createWallSkirt(
             wallLength, skirtHeight, skirtDepth,
             new THREE.Vector3(ROOM_SIZE/2 - skirtDepth/2 - skirtOffset, skirtY, 0)
@@ -299,14 +309,12 @@ export function nexusEnvironment(scene) {
         rightSkirt.rotation.y = Math.PI/2;
         scene.add(rightSkirt);
 
-        // Corner blocks
         const cornerBlockSize = skirtDepth * 1.5;
         const cornerBlock = new THREE.Mesh(
             new THREE.BoxGeometry(cornerBlockSize, skirtHeight, cornerBlockSize),
             skirtMaterial
         );
         
-        // Position corner blocks
         const cornerXZ = ROOM_SIZE/2 - cornerBlockSize/2 - skirtOffset;
         cornerBlock.position.set(-cornerXZ, skirtY, -cornerXZ);
         scene.add(cornerBlock.clone());
@@ -317,12 +325,10 @@ export function nexusEnvironment(scene) {
         cornerBlock.position.set(cornerXZ, skirtY, cornerXZ);
         scene.add(cornerBlock.clone());
 
-        // ========== TEXTURED GATES ==========
         const gateSize = { width: 20, height: 30, depth: 8, thickness: 1.5 };
         const gateVerticalPos = FLOOR_Y + ROOM_HEIGHT/4;
         const gateOffset = ROOM_SIZE/2 - 1 + skirtDepth; 
 
-        // Calculate gate positions
         const totalWallLength = ROOM_SIZE;
         const gateWidth = gateSize.width;
         const totalGates = 2;
@@ -334,75 +340,84 @@ export function nexusEnvironment(scene) {
         const secondGatePos = firstGatePos + gateWidth + gapSize;
         const gatePositions = [firstGatePos, secondGatePos];
 
-        // Front wall (Z negative) - Blue portals
+        // METAL GATES - DEEPER TONES
         scene.add(createGate(
             { x: gatePositions[0], y: gateVerticalPos, z: -gateOffset },
             gateSize,
-            goldMaterial,
-            0x0066ff,
+            frameMaterial,
+            goldPortalMaterial,
+            0x6C3082  ,  // Dark antique gold (RGB: 212, 175, 55)
             0
         ));
+
         scene.add(createGate(
             { x: gatePositions[1], y: gateVerticalPos, z: -gateOffset },
             gateSize,
-            goldMaterial,
-            0x0066ff,
+            frameMaterial,
+            goldPortalMaterial,
+            0x5A5A58,  // Oxidized silver (RGB: 90, 90, 88)
             0
         ));
 
-        // Back wall (Z positive) - Green portals
         scene.add(createGate(
             { x: gatePositions[0], y: gateVerticalPos, z: gateOffset },
             gateSize,
-            goldMaterial,
-            0x00ff66,
+            frameMaterial,
+            goldPortalMaterial,
+            0xB08D57,  // Weathered bronze (RGB: 176, 141, 87)
             Math.PI
         ));
+
+        // GEMSTONE GATES - SATURATED DARKS
         scene.add(createGate(
             { x: gatePositions[1], y: gateVerticalPos, z: gateOffset },
             gateSize,
-            goldMaterial,
-            0x00ff66,
+            frameMaterial,
+            goldPortalMaterial,
+            0x0D3B8E,  // Deep sapphire (RGB: 13, 59, 142)
             Math.PI
         ));
 
-        // Left wall (X negative) - Orange portals
         scene.add(createGate(
             { x: -gateOffset, y: gateVerticalPos, z: gatePositions[0] },
             gateSize,
-            goldMaterial,
-            0xff6600,
+            frameMaterial,
+            goldPortalMaterial,
+            0x7D0A1C,  // Blood ruby (RGB: 125, 10, 28)
             Math.PI/2
         ));
+
         scene.add(createGate(
             { x: -gateOffset, y: gateVerticalPos, z: gatePositions[1] },
             gateSize,
-            goldMaterial,
-            0xff6600,
+            frameMaterial,
+            goldPortalMaterial,
+            0x0A5F38,  // Forest emerald (RGB: 10, 95, 56)
             Math.PI/2
         ));
 
-        // Right wall (X positive) - Purple portals
+        // SPECIAL GATES
         scene.add(createGate(
             { x: gateOffset, y: gateVerticalPos, z: gatePositions[0] },
             gateSize,
-            goldMaterial,
-            0xcc00ff,
-            -Math.PI/2
-        ));
-        scene.add(createGate(
-            { x: gateOffset, y: gateVerticalPos, z: gatePositions[1] },
-            gateSize,
-            goldMaterial,
-            0xcc00ff,
+            frameMaterial,
+            goldPortalMaterial,
+            0x4B0082,  // Diamond blue-white (RGB: 185, 242, 255)
             -Math.PI/2
         ));
 
-        // ========== TEXTURED PILLARS ==========
+        scene.add(createGate(
+            { x: gateOffset, y: gateVerticalPos, z: gatePositions[1] },
+            gateSize,
+            frameMaterial,
+            goldPortalMaterial,
+            0x0A0A0C,  // True ebony (RGB: 10, 10, 12)
+            -Math.PI/2
+        ));
+        
         const createCornerColumn = (x, z) => {
             const group = new THREE.Group();
             
-            // Main column
             const columnHeight = ROOM_HEIGHT * 0.85;
             const column = new THREE.Mesh(
                 new THREE.CylinderGeometry(2, 2, columnHeight, 16),
@@ -411,7 +426,6 @@ export function nexusEnvironment(scene) {
             column.position.set(x, FLOOR_Y + columnHeight/2, z);
             group.add(column);
 
-            // Arch to center
             const splitY = FLOOR_Y + columnHeight;
             const centerY = FLOOR_Y + ROOM_HEIGHT - 2;
 
@@ -440,18 +454,15 @@ export function nexusEnvironment(scene) {
             return group;
         };
 
-        // Add columns close to corners (2 units from walls)
         const cornerPos = ROOM_SIZE/2 - 2;
         scene.add(createCornerColumn(-cornerPos, -cornerPos));
         scene.add(createCornerColumn(-cornerPos, cornerPos));
         scene.add(createCornerColumn(cornerPos, -cornerPos));
         scene.add(createCornerColumn(cornerPos, cornerPos));
 
-        // ========== TEXTURED CEILING CIRCLE WITH WINDOW ==========
         const circleRadius = 40;
         const circleThickness = 2;
         
-        // Main torus (the ring)
         const circle = new THREE.Mesh(
             new THREE.TorusGeometry(circleRadius, circleThickness, 32, 64),
             columnMaterial
@@ -460,17 +471,15 @@ export function nexusEnvironment(scene) {
         circle.rotation.x = Math.PI/2;
         scene.add(circle);
 
-        // Window disc (the bottom part)
         const windowDisc = new THREE.Mesh(
             new THREE.CircleGeometry(circleRadius - circleThickness, 64),
             windowMaterial
         );
         windowDisc.position.copy(circle.position);
         windowDisc.rotation.x = -Math.PI/2;
-        windowDisc.position.y -= circleThickness/2;
+        windowDisc.position.y -= circleThickness + 1;
         scene.add(windowDisc);
 
-        // Window lighting effects
         const windowLight = new THREE.PointLight(0xffffff, 1, 50);
         windowLight.position.copy(circle.position);
         windowLight.position.y -= 5;

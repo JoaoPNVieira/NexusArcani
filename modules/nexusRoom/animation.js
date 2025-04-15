@@ -27,46 +27,48 @@ export function animateNexusRoom(params) {
     const currentVelocity = new THREE.Vector3();
 
     function render() {
+        const delta = clock.getDelta();
+        const elapsedTime = clock.getElapsedTime();
+        
         requestAnimationFrame(render);
         
-        // Nexus animation
+        // Animate all gates in the scene
+        scene.traverse(object => {
+            if (object.userData?.isGate) {
+                // Find the portal mesh (it's the last child)
+                const portal = object.children[object.children.length - 1];
+                if (portal.userData?.update) {
+                    portal.userData.update(delta);
+                }
+            }
+        });
+
+        // Nexus animation (if exists)
         if (nexus?.userData?.animate) {
-            nexus.userData.animate(clock.getElapsedTime());
+            nexus.userData.animate(elapsedTime);
         }
 
-        // ========== IMPORTANT JUMP FIXES START HERE ========== //
-        
-        // 1. Apply gravity FIRST (before movement)
+        // ====== Rest of your existing physics/movement code ====== //
         verticalVelocity -= restParams.GRAVITY;
-        
-        // 2. Then apply vertical movement (jumping/falling)
         cameraRig.position.y += verticalVelocity;
 
-        // 3. Improved ground collision detection
         const currentStandHeight = moveState.isCrouching ? restParams.CROUCH_HEIGHT : restParams.STAND_HEIGHT;
         const groundLevel = FLOOR_Y + currentStandHeight;
 
         if (cameraRig.position.y <= groundLevel) {
-            // Snap to ground level
             cameraRig.position.y = groundLevel;
-            
-            // Only reset states if we were falling down (not jumping up)
             if (verticalVelocity <= 0) {
                 verticalVelocity = 0;
                 isGrounded = true;
                 moveState.isJumping = false;
-                
-                // Debug log (you can remove this later)
-                console.log("Landed! Grounded:", isGrounded, "Jumping:", moveState.isJumping);
             }
         }
 
-        // ========== MOVEMENT CODE (UNCHANGED) ========== //
+        // Movement code (unchanged)
         const direction = new THREE.Vector3();
         const cameraDirection = new THREE.Vector3();
         camera.getWorldDirection(cameraDirection);
         
-        // Flatten the direction vector
         cameraDirection.y = 0;
         cameraDirection.normalize();
 
@@ -75,7 +77,6 @@ export function animateNexusRoom(params) {
         if (moveState.left) direction.add(new THREE.Vector3(cameraDirection.z, 0, -cameraDirection.x));
         if (moveState.right) direction.add(new THREE.Vector3(-cameraDirection.z, 0, cameraDirection.x));
 
-        // Apply movement with damping
         if (direction.length() > 0) {
             direction.normalize();
             const targetVelocity = direction.multiplyScalar(
