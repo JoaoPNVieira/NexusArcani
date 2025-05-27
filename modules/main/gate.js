@@ -31,10 +31,10 @@ export function createGate(position, size, frameMaterial, portalMaterial, portal
     const portalWidth = size.width - size.thickness * 2;
     const portalHeight = size.height - size.thickness;
     
-    const portalGeometry = new THREE.PlaneGeometry(
+    const portalGeometry = new THREE.BoxGeometry(
         portalWidth, 
         portalHeight, 
-        32, 32
+        2.5 // Grossura do Portal
     );
     
     const originalPositions = portalGeometry.attributes.position.clone();
@@ -46,7 +46,7 @@ export function createGate(position, size, frameMaterial, portalMaterial, portal
     );
     portal.material.emissive.setHex(portalColor);
     portal.material.roughness = 20;
-    portal.position.z = size.depth/2 + 0.1;
+    portal.position.z = size.depth/2 - 2;
     portal.position.y = -size.thickness/2;
     
     portal.userData = {

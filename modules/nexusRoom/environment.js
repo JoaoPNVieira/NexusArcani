@@ -99,7 +99,7 @@ export function nexusEnvironment(scene) {
         const floorRepeat = ROOM_SIZE / 10;
         const wallRepeat = ROOM_HEIGHT / 10;
         const goldRepeat = 2;
-        const skirtRepeat = 4;
+        const skirtRepeat = 1;
         const columnsRepeat = 1;
         
         Object.values(floorTex).forEach(t => t.repeat.set(floorRepeat, floorRepeat));
@@ -271,41 +271,50 @@ export function nexusEnvironment(scene) {
         const skirtOffset = 0.1;
         const wallLength = ROOM_SIZE - 2 * skirtDepth;
 
-        const createWallSkirt = (width, height, depth, position, rotation) => {
-            const skirt = new THREE.Mesh(
-                new THREE.BoxGeometry(width, height, depth),
-                skirtMaterial
-            );
-            skirt.position.copy(position);
-            if (rotation) skirt.rotation.copy(rotation);
-            return skirt;
+        const createSegmentedSkirt = (length, height, depth, position, rotationY = 0) => {
+            const group = new THREE.Group();
+            const blockWidth = 5;
+            const blockCount = Math.ceil(length / blockWidth);
+            const actualBlockWidth = length / blockCount;
+            
+            for (let i = 0; i < blockCount; i++) {
+                const block = new THREE.Mesh(
+                    new THREE.BoxGeometry(actualBlockWidth, height, depth),
+                    skirtMaterial
+                );
+                const xPos = -length/2 + i * actualBlockWidth + actualBlockWidth/2;
+                block.position.set(xPos, 0, 0);
+                group.add(block);
+            }
+            
+            group.position.copy(position);
+            if (rotationY !== 0) group.rotation.y = rotationY;
+            return group;
         };
 
         const skirtY = FLOOR_Y + skirtHeight/2;
         
-        scene.add(createWallSkirt(
+        scene.add(createSegmentedSkirt(
             wallLength, skirtHeight, skirtDepth,
             new THREE.Vector3(0, skirtY, -ROOM_SIZE/2 + skirtDepth/2 + skirtOffset)
         ));
         
-        scene.add(createWallSkirt(
+        scene.add(createSegmentedSkirt(
             wallLength, skirtHeight, skirtDepth,
             new THREE.Vector3(0, skirtY, ROOM_SIZE/2 - skirtDepth/2 - skirtOffset)
         ));
         
-        const leftSkirt = createWallSkirt(
+        scene.add(createSegmentedSkirt(
             wallLength, skirtHeight, skirtDepth,
-            new THREE.Vector3(-ROOM_SIZE/2 + skirtDepth/2 + skirtOffset, skirtY, 0)
-        );
-        leftSkirt.rotation.y = Math.PI/2;
-        scene.add(leftSkirt);
+            new THREE.Vector3(-ROOM_SIZE/2 + skirtDepth/2 + skirtOffset, skirtY, 0),
+            Math.PI/2
+        ));
         
-        const rightSkirt = createWallSkirt(
+        scene.add(createSegmentedSkirt(
             wallLength, skirtHeight, skirtDepth,
-            new THREE.Vector3(ROOM_SIZE/2 - skirtDepth/2 - skirtOffset, skirtY, 0)
-        );
-        rightSkirt.rotation.y = Math.PI/2;
-        scene.add(rightSkirt);
+            new THREE.Vector3(ROOM_SIZE/2 - skirtDepth/2 - skirtOffset, skirtY, 0),
+            Math.PI/2
+        ));
 
         const cornerBlockSize = skirtDepth * 1.5;
         const cornerBlock = new THREE.Mesh(

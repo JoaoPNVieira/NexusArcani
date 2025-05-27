@@ -8,15 +8,16 @@ import * as THREE from 'three';
  */
 
 export function setupCamera(scene, FLOOR_Y) {
-    // Cria uma câmara perspetiva com valores padrão
+    
+    // CÂMARA: Perspetiva com valores padrão
     const camera = new THREE.PerspectiveCamera(
-        75, // Campo de visão (em graus)
+        75,                                     // Campo de visão (em graus)
         window.innerWidth / window.innerHeight, // Proporção de aspeto
-        0.1, // Plano de corte próximo
-        1000 // Plano de corte distante
+        0.1,                                    // Plano de corte próximo
+        1000                                    // Plano de corte distante
     );
     
-    // Cria um grupo para servir como base do sistema de câmara
+    // Grupo para servir como base do sistema de câmara
     const cameraRig = new THREE.Group();
     scene.add(cameraRig);
     
