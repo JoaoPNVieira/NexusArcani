@@ -15,12 +15,14 @@ export function animateNexusRoom(params) {
         ...restParams
     } = params;
 
-    let {
-        moveSpeed,
-        verticalVelocity,
-        isGrounded,
-        moveState
-    } = restParams;
+    // let {
+    //     moveSpeed,
+    //     verticalVelocity,
+    //     isGrounded,
+    //     moveState
+    // } = restParams;
+    let moveSpeed = restParams.moveSpeed;
+    let moveState = restParams.moveState;
 
     const movementDamping = 0.2;
     const currentVelocity = new THREE.Vector3();
@@ -44,37 +46,41 @@ export function animateNexusRoom(params) {
             nexus.userData.animate(elapsedTime);
         }
 
-        verticalVelocity -= restParams.GRAVITY;
-        cameraRig.position.y += verticalVelocity;
+        // Physics calculations
+        if (restParams.moveState.isJumping) {
+            restParams.verticalVelocity -= restParams.GRAVITY * delta * 60;
+            cameraRig.position.y += restParams.verticalVelocity * delta * 60;
+        }
 
-        const currentStandHeight = moveState.isCrouching ? restParams.CROUCH_HEIGHT : restParams.STAND_HEIGHT;
-        const groundLevel = FLOOR_Y + currentStandHeight;
+        const groundLevel = FLOOR_Y + (
+            restParams.moveState.isCrouching ? restParams.CROUCH_HEIGHT : restParams.STAND_HEIGHT
+        );
 
         if (cameraRig.position.y <= groundLevel) {
-            cameraRig.position.y = groundLevel;
-            if (verticalVelocity <= 0) {
-                verticalVelocity = 0;
-                isGrounded = true;
-                moveState.isJumping = false;
+            if (restParams.verticalVelocity <= 0) {
+                cameraRig.position.y = groundLevel;
+                restParams.verticalVelocity = 0;
+                restParams.isGrounded = true;
+                restParams.moveState.isJumping = false;
             }
         }
 
+        // Movement
         const direction = new THREE.Vector3();
         const cameraDirection = new THREE.Vector3();
         camera.getWorldDirection(cameraDirection);
-        
         cameraDirection.y = 0;
         cameraDirection.normalize();
 
-        if (moveState.forward) direction.add(cameraDirection);
-        if (moveState.backward) direction.sub(cameraDirection);
-        if (moveState.left) direction.add(new THREE.Vector3(cameraDirection.z, 0, -cameraDirection.x));
-        if (moveState.right) direction.add(new THREE.Vector3(-cameraDirection.z, 0, cameraDirection.x));
+        if (restParams.moveState.forward) direction.add(cameraDirection);
+        if (restParams.moveState.backward) direction.sub(cameraDirection);
+        if (restParams.moveState.left) direction.add(new THREE.Vector3(cameraDirection.z, 0, -cameraDirection.x));
+        if (restParams.moveState.right) direction.add(new THREE.Vector3(-cameraDirection.z, 0, cameraDirection.x));
 
         if (direction.length() > 0) {
             direction.normalize();
             const targetVelocity = direction.multiplyScalar(
-                moveState.isRunning ? moveSpeed * restParams.RUN_MULTIPLIER : moveSpeed
+                restParams.moveState.isRunning ? restParams.moveSpeed * restParams.RUN_MULTIPLIER : restParams.moveSpeed
             );
             currentVelocity.lerp(targetVelocity, movementDamping);
             cameraRig.position.add(currentVelocity);

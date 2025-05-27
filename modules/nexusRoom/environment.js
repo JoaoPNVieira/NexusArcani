@@ -1,5 +1,8 @@
 import * as THREE from 'three';
 import { createGate } from '../main/gate.js';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
+import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 
 export function nexusEnvironment(scene) {
     const ROOM_SIZE = 100;
@@ -167,8 +170,8 @@ export function nexusEnvironment(scene) {
             aoMap: floorTex.occ,
             displacementMap: floorTex.displacement,
             displacementScale: 0.1,
-            roughness: 0.8,
-            metalness: 0.2
+            roughness: 0.9,  
+            metalness: 0.1
         });
 
         const windowMaterial = new THREE.MeshStandardMaterial({
@@ -187,11 +190,11 @@ export function nexusEnvironment(scene) {
             normalMap: goldTex.normal,
             roughnessMap: goldTex.roughness,
             metalnessMap: goldTex.metalness,
-            emissive: 0xffff00,
-            emissiveIntensity: 2,
-            transparent: true,
-            opacity: 0.9,
-            roughness: 50,
+            emissive: 0x333333, 
+            emissiveIntensity: 0.2,
+            transparent: false,
+            opacity: 1,
+            roughness: 200,
             metalness: 1.2,
             side: THREE.DoubleSide,
             wireframe: false 
@@ -241,6 +244,43 @@ export function nexusEnvironment(scene) {
             skirtMaterial,
             columnMaterial
         };
+    };
+
+    const loadWizardStatue = () => {
+        const loader = new GLTFLoader();
+        const dracoLoader = new DRACOLoader();
+        dracoLoader.setDecoderPath('https://www.gstatic.com/draco/v1/decoders/');
+        loader.setDRACOLoader(dracoLoader);
+        loader.setMeshoptDecoder(MeshoptDecoder);
+
+        return new Promise((resolve) => {
+            loader.load(
+                './assets/wizard_statue/wizard_statue_25.glb',
+                (gltf) => {
+                    const model = gltf.scene;
+                    model.position.set(0, FLOOR_Y + 10, 0); // Center of room
+                    model.scale.set(5, 5, 5);
+                    
+                    model.traverse((child) => {
+                        if (child.isMesh) {
+                            child.castShadow = true;
+                            child.receiveShadow = true;
+                            if (child.material) {
+                                child.material.roughness = 0.9;
+                                child.material.metalness = 0.1;
+                                child.material.color.setHex(0x555555);
+                            }
+                        }
+                    });
+                    resolve(model);
+                },
+                undefined,
+                (error) => {
+                    console.error('ERRO: Estatua central de feiticeiro não carregada! :', error);
+                    resolve(null);
+                }
+            );
+        });
     };
 
     createMaterials().then(({ 
@@ -352,7 +392,7 @@ export function nexusEnvironment(scene) {
             gateSize,
             frameMaterial,
             goldPortalMaterial,
-            0x6C3082,
+            0x1A237E,
             0
         ));
 
@@ -361,7 +401,7 @@ export function nexusEnvironment(scene) {
             gateSize,
             frameMaterial,
             goldPortalMaterial,
-            0x5A5A58,
+            0x1565C0,
             0
         ));
 
@@ -370,7 +410,7 @@ export function nexusEnvironment(scene) {
             gateSize,
             frameMaterial,
             goldPortalMaterial,
-            0xB08D57,
+            0x1B5E20,
             Math.PI
         ));
 
@@ -379,7 +419,7 @@ export function nexusEnvironment(scene) {
             gateSize,
             frameMaterial,
             goldPortalMaterial,
-            0x0D3B8E,
+            0x2E7D32,
             Math.PI
         ));
 
@@ -388,7 +428,7 @@ export function nexusEnvironment(scene) {
             gateSize,
             frameMaterial,
             goldPortalMaterial,
-            0x7D0A1C,
+            0x4A148C,
             Math.PI/2
         ));
 
@@ -397,7 +437,7 @@ export function nexusEnvironment(scene) {
             gateSize,
             frameMaterial,
             goldPortalMaterial,
-            0x0A5F38,
+            0xC2185B,
             Math.PI/2
         ));
 
@@ -406,7 +446,7 @@ export function nexusEnvironment(scene) {
             gateSize,
             frameMaterial,
             goldPortalMaterial,
-            0x4B0082,
+            0x8D6E63,
             -Math.PI/2
         ));
 
@@ -415,7 +455,7 @@ export function nexusEnvironment(scene) {
             gateSize,
             frameMaterial,
             goldPortalMaterial,
-            0x0A0A0C,
+            0xFFAB00,
             -Math.PI/2
         ));
         
@@ -484,13 +524,60 @@ export function nexusEnvironment(scene) {
         windowDisc.position.y -= circleThickness + 1;
         scene.add(windowDisc);
 
-        const windowLight = new THREE.PointLight(0xffffff, 1, 50);
+        const windowLight = new THREE.PointLight(0x88ccff, 0.5, 30);
         windowLight.position.copy(circle.position);
         windowLight.position.y -= 5;
         scene.add(windowLight);
 
-        const windowAmbient = new THREE.AmbientLight(0x88ccff, 0.3);
+        const windowAmbient = new THREE.AmbientLight(0x88ccff, 0.1);
         scene.add(windowAmbient);
+
+       loadWizardStatue().then((wizardStatue) => {
+            if (wizardStatue) {
+                
+                wizardStatue.traverse((child) => {
+                    if (child.isMesh) {
+                        child.castShadow = true;
+                        child.receiveShadow = true;
+                        if (child.material) {
+                            
+                            child.material.roughness = 0.5;  
+                            child.material.metalness = 0.9;  
+                            child.material.color.setHex(0xFFFFFF);  
+                            child.material.envMapIntensity = 0.9;  
+                           
+                            child.material.emissive = new THREE.Color(0x111111);
+                            child.material.emissiveIntensity = 0.6;
+                        }
+                    }
+                });
+
+                
+                scene.add(wizardStatue);
+                
+                // SPOTLIGHT: 
+                const statueLight = new THREE.SpotLight(0xffdd99, 5, 30, Math.PI/6, 0.7);
+                statueLight.position.set(10, 25, 10);
+                statueLight.target.position.set(0, FLOOR_Y + 3, 0);
+                statueLight.castShadow = true;
+                statueLight.shadow.mapSize.width = 2048;
+                statueLight.shadow.mapSize.height = 2048;
+                scene.add(statueLight);  
+                scene.add(statueLight.target);
+                
+                // Luz para deduzir contraste
+                const fillLight = new THREE.DirectionalLight(0x445588, 0.8);
+                fillLight.position.set(-10, 15, -10);
+                scene.add(fillLight);
+                
+                // luz nas bordas para dar uma melhor definição
+                const rimLight = new THREE.DirectionalLight(0xffeedd, 0.6);
+                rimLight.position.set(5, 10, -15);
+                scene.add(rimLight);
+            }
+        });
+
+        return { ROOM_SIZE, FLOOR_Y };
     });
 
     return { ROOM_SIZE, FLOOR_Y };

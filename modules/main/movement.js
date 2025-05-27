@@ -4,10 +4,10 @@ export function setupMovement() {
     return {
         BASE_MOVE_SPEED: 0.2,
         RUN_MULTIPLIER: 1.8,
-        JUMP_FORCE: 5,
-        GRAVITY: 0.5, 
+        JUMP_FORCE: 20,  
+        GRAVITY: 9.8,
         CROUCH_HEIGHT: 1.0,
-        STAND_HEIGHT: 1.7,
+        STAND_HEIGHT: 1.8,
         moveSpeed: 0.2,
         verticalVelocity: 0,
         isGrounded: true,

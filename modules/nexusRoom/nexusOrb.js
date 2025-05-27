@@ -112,6 +112,22 @@ export function createNexus(radius = 6) {
     ];
     nexusGroup.add(...rings);
 
+    const orbLight = new THREE.PointLight(0xffaa33, 5, 50, 2);
+    orbLight.position.set(0, 0, 0);
+    nexusGroup.add(orbLight);
+
+    // Add light halo effect
+    const lightHalo = new THREE.Mesh(
+        new THREE.SphereGeometry(radius * 1.5, 32, 32),
+        new THREE.MeshBasicMaterial({
+            color: 0xffaa33,
+            transparent: true,
+            opacity: 0.2,
+            blending: THREE.AdditiveBlending
+        })
+    );
+    nexusGroup.add(lightHalo);
+
     nexusGroup.userData.animate = function(time) {
         starCore.rotation.y = time * 0.15;
         starCore.rotation.z = Math.sin(time * 0.25) * 0.08;
@@ -130,6 +146,13 @@ export function createNexus(radius = 6) {
             ring.userData.causticsRef.rotation.z += 0.008;
             ring.userData.causticsRef.material.opacity = 0.3 + Math.sin(time * 2.5 + index) * 0.15;
         });
+
+        // Animar a intensidade da luz
+        orbLight.intensity = 5 + Math.sin(time * 2) * 2;
+        orbLight.color.setHSL(0.1 + Math.sin(time * 0.5) * 0.05, 0.8, 0.7);
+    
+        // Animação Halo
+        lightHalo.scale.setScalar(1 + Math.sin(time) * 0.1);
     };
 
     return nexusGroup;
