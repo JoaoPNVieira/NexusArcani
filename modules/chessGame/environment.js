@@ -109,9 +109,9 @@ export function chessEnvironment(scene) {
         };
         
         const pieceMat = new THREE.MeshStandardMaterial({ 
-            color: color === 'white' ? 0xFFFFFF : 0x222222,
+            color: color === 'white' ? 0xFFFFFF : 0xFFD700, // Gold color for black pieces
             roughness: 0.3,
-            metalness: 0.7
+            metalness: color === 'white' ? 0.7 : 1.0 // More metallic for gold
         });
         
         let geometry;
@@ -509,7 +509,102 @@ export function chessEnvironment(scene) {
         0x1A237E,
         0
     ));
+
+
+    const circleRadius = 40;
+    const circleThickness = 2;
     
+    const columnMaterial = new THREE.MeshStandardMaterial({
+        color: 0x888888,
+        roughness: 10,
+        metalness: 0.2
+    });
+
+    const windowMaterial = new THREE.MeshStandardMaterial({
+        color: 0x88ccff,
+        transparent: true,
+        opacity: 0.7,
+        emissive: 0x011635,
+        emissiveIntensity: 0.4
+    });
+
+
+    const circle = new THREE.Mesh(
+        new THREE.TorusGeometry(circleRadius, circleThickness, 32, 64),
+        columnMaterial
+    );
+    circle.position.set(0, FLOOR_Y + ROOM_HEIGHT - 2, 0);
+    circle.rotation.x = Math.PI/2;
+    scene.add(circle);
+
+    const windowDisc = new THREE.Mesh(
+        new THREE.CircleGeometry(circleRadius - circleThickness, 64),
+        windowMaterial
+    );
+    windowDisc.position.copy(circle.position);
+    windowDisc.rotation.x = -Math.PI/2;
+    windowDisc.position.y -= circleThickness + 1;
+    scene.add(windowDisc);
+
+    const windowLight = new THREE.PointLight(0x88ccff, 0.5, 30);
+    windowLight.position.copy(circle.position);
+    windowLight.position.y -= 5;
+    scene.add(windowLight);
+
+    const windowAmbient = new THREE.AmbientLight(0x88ccff, 0.1);
+    scene.add(windowAmbient);
+
+    const orbGeometry = new THREE.SphereGeometry(5, 32, 32);
+    const orbMaterial = new THREE.MeshStandardMaterial({
+        color: 0x1a237e,
+        emissive: 0x4fc3f7,
+        emissiveIntensity: 0.5,
+        roughness: 0.1,
+        metalness: 0.9,
+        transparent: true,
+        opacity: 0.9
+    });
+    const orb = new THREE.Mesh(orbGeometry, orbMaterial);
+    orb.position.set(0, FLOOR_Y + ROOM_HEIGHT - 15, 0);
+    scene.add(orb);
+
+    const innerRing1 = new THREE.Mesh(
+        new THREE.TorusGeometry(8, 0.5, 16, 32),
+        new THREE.MeshStandardMaterial({ 
+            color: 0x4fc3f7,
+            emissive: 0x4fc3f7,
+            emissiveIntensity: 0.3
+        })
+    );
+    innerRing1.position.copy(orb.position);
+    innerRing1.rotation.x = Math.PI/2;
+    scene.add(innerRing1);
+
+    const innerRing2 = new THREE.Mesh(
+        new THREE.TorusGeometry(10, 0.3, 16, 32),
+        new THREE.MeshStandardMaterial({ 
+            color: 0x1a237e,
+            emissive: 0x4fc3f7,
+            emissiveIntensity: 0.2
+        })
+    );
+    innerRing2.position.copy(orb.position);
+    innerRing2.rotation.z = Math.PI/2;
+    scene.add(innerRing2);
+
+    const animateOrb = () => {
+        requestAnimationFrame(animateOrb);
+        const time = Date.now() * 0.001;
+        
+        orb.rotation.y = time * 0.3;
+        innerRing1.rotation.y = time * 0.5;
+        innerRing2.rotation.x = time * 0.4;
+        
+        orb.scale.setScalar(1 + Math.sin(time * 10) * 0.05);
+        orbMaterial.emissiveIntensity = 5 + Math.sin(time * 1.5) * 0.2;
+    };
+    animateOrb();
+
     // Função para limpar o listener do click do rato (interação)
     const cleanup = () => {
         window.removeEventListener('click', handleClick);
