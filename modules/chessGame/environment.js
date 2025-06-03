@@ -7,18 +7,18 @@ export function chessEnvironment(scene) {
     const FLOOR_Y = -ROOM_HEIGHT / 2;
     const CHESS_PIECE_SCALE = 3;
     
-    // Parametros do tabuleiro
+    // Dimensões do tabuleiro de xadrez
     const BOARD_SIZE = 40;
     const SQUARE_SIZE = BOARD_SIZE / 8;
     const PIECE_HEIGHT = SQUARE_SIZE * 1.5;
     
-    // Parametros de controlo
-    const PANEL_WIDTH = BOARD_SIZE * 1.2;
-    const PANEL_HEIGHT = 10;
-    const PANEL_DEPTH = 2;
-    const PANEL_Y = FLOOR_Y + PANEL_HEIGHT/2 + 1;
+    // Estado do jogo
+    let selectedPiece = null;
+    let currentPlayer = 'white';
+    let gamePieces = [];
+    let capturedPieces = [];
     
-    // Criar a sala
+    // Criar da sala de jogo 
     const room = new THREE.Mesh(
         new THREE.BoxGeometry(ROOM_SIZE, ROOM_HEIGHT, ROOM_SIZE),
         new THREE.MeshStandardMaterial({ 
@@ -30,36 +30,47 @@ export function chessEnvironment(scene) {
     );
     scene.add(room);
     
-    // Create the floor with a chessboard pattern
+    // Criar chão de cor branca
     const floor = new THREE.Mesh(
         new THREE.PlaneGeometry(ROOM_SIZE, ROOM_SIZE),
         new THREE.MeshStandardMaterial({ 
-            color: 0x555555,
+            color: 0xFFFFFF,
             roughness: 0.7,
             metalness: 0.1
         })
     );
     floor.rotation.x = -Math.PI / 2;
-    floor.position.y = FLOOR_Y;
+    floor.position.y = FLOOR_Y + 0.1;
     scene.add(floor);
     
-    // Tabuleiro do zadrez
+    // -----------------------------------------
+    // Grupo que contém o tabuleiro de xadrez
     const boardGroup = new THREE.Group();
     boardGroup.position.y = FLOOR_Y + 0.1;
     scene.add(boardGroup);
     
+    // Base para o tabuleiro de xadrez
     const boardBase = new THREE.Mesh(
         new THREE.BoxGeometry(BOARD_SIZE + 2, 1, BOARD_SIZE + 2),
         new THREE.MeshStandardMaterial({ 
-            color: 0x8B4513, // madeira 
+            color: 0x8B4513,
             roughness: 0.6
         })
     );
     boardGroup.add(boardBase);
     
-    // Quadrados
+    // Criação das casas do tabuleiro de zadrez
     const lightSquareMat = new THREE.MeshStandardMaterial({ color: 0xF0D9B5 });
     const darkSquareMat = new THREE.MeshStandardMaterial({ color: 0xB58863 });
+    const highlightMat = new THREE.MeshStandardMaterial({ 
+        color: 0x00FF00,
+        emissive: 0x00AA00,
+        emissiveIntensity: 0.5,
+        transparent: true,
+        opacity: 0.7
+    });
+    
+    const chessSquares = [];
     
     for (let i = 0; i < 8; i++) {
         for (let j = 0; j < 8; j++) {
@@ -73,11 +84,14 @@ export function chessEnvironment(scene) {
                 0.6,
                 (j - 3.5) * SQUARE_SIZE
             );
+            square.userData = { x: i, y: j };
             boardGroup.add(square);
+            chessSquares.push(square);
         }
     }
     
-    // Simples (peao)
+    // -------------------------
+    // Criar peças do jogo
     const createChessPiece = (type, color, x, z) => {
         const pieceGroup = new THREE.Group();
         pieceGroup.position.set(
@@ -85,6 +99,14 @@ export function chessEnvironment(scene) {
             FLOOR_Y + PIECE_HEIGHT/2,
             (z - 3.5) * SQUARE_SIZE
         );
+        
+        pieceGroup.userData = {
+            type,
+            color,
+            boardX: x,
+            boardZ: z,
+            isSelected: false
+        };
         
         const pieceMat = new THREE.MeshStandardMaterial({ 
             color: color === 'white' ? 0xFFFFFF : 0x222222,
@@ -101,7 +123,6 @@ export function chessEnvironment(scene) {
                 geometry = new THREE.BoxGeometry(SQUARE_SIZE/1.5, PIECE_HEIGHT, SQUARE_SIZE/1.5);
                 break;
             case 'knight':
-                // Cavaleiros
                 const head = new THREE.Mesh(
                     new THREE.SphereGeometry(SQUARE_SIZE/3, 16, 16),
                     pieceMat
@@ -116,7 +137,6 @@ export function chessEnvironment(scene) {
                 geometry = new THREE.ConeGeometry(SQUARE_SIZE/2, PIECE_HEIGHT, 16);
                 break;
             case 'queen':
-                // Coroa
                 const base = new THREE.Mesh(
                     new THREE.SphereGeometry(SQUARE_SIZE/2, 16, 16),
                     pieceMat
@@ -131,7 +151,6 @@ export function chessEnvironment(scene) {
                 top.position.y = PIECE_HEIGHT * 0.65;
                 pieceGroup.add(top);
                 
-                // Coroa
                 for (let i = 0; i < 5; i++) {
                     const spike = new THREE.Mesh(
                         new THREE.ConeGeometry(SQUARE_SIZE/6, PIECE_HEIGHT*0.3, 8),
@@ -144,7 +163,6 @@ export function chessEnvironment(scene) {
                 }
                 return pieceGroup;
             case 'king':
-                // Cruz no topo da peça
                 geometry = new THREE.CylinderGeometry(SQUARE_SIZE/3, SQUARE_SIZE/2, PIECE_HEIGHT, 16);
                 const crossBase = new THREE.Mesh(
                     new THREE.BoxGeometry(SQUARE_SIZE/4, PIECE_HEIGHT*0.3, SQUARE_SIZE/4),
@@ -177,120 +195,46 @@ export function chessEnvironment(scene) {
         return pieceGroup;
     };
     
-    // posição inicial 
-    const chessPieces = [];
+    // Inicialização de peças do jogo
+    const initializePieces = () => {
+        // Brancas:
+        gamePieces.push(createChessPiece('rook', 'white', 0, 0));
+        gamePieces.push(createChessPiece('knight', 'white', 1, 0));
+        gamePieces.push(createChessPiece('bishop', 'white', 2, 0));
+        gamePieces.push(createChessPiece('queen', 'white', 3, 0));
+        gamePieces.push(createChessPiece('king', 'white', 4, 0));
+        gamePieces.push(createChessPiece('bishop', 'white', 5, 0));
+        gamePieces.push(createChessPiece('knight', 'white', 6, 0));
+        gamePieces.push(createChessPiece('rook', 'white', 7, 0));
+        
+        for (let i = 0; i < 8; i++) {
+            gamePieces.push(createChessPiece('pawn', 'white', i, 1));
+        }
+        
+        // Pretas:
+        gamePieces.push(createChessPiece('rook', 'black', 0, 7));
+        gamePieces.push(createChessPiece('knight', 'black', 1, 7));
+        gamePieces.push(createChessPiece('bishop', 'black', 2, 7));
+        gamePieces.push(createChessPiece('queen', 'black', 3, 7));
+        gamePieces.push(createChessPiece('king', 'black', 4, 7));
+        gamePieces.push(createChessPiece('bishop', 'black', 5, 7));
+        gamePieces.push(createChessPiece('knight', 'black', 6, 7));
+        gamePieces.push(createChessPiece('rook', 'black', 7, 7));
+        
+        for (let i = 0; i < 8; i++) {
+            gamePieces.push(createChessPiece('pawn', 'black', i, 6));
+        }
+        
+        // add de peças (importante)
+        gamePieces.forEach(piece => scene.add(piece));
+    };
     
-    // Peças brancas
-    chessPieces.push(createChessPiece('rook', 'white', 0, 0));
-    chessPieces.push(createChessPiece('knight', 'white', 1, 0));
-    chessPieces.push(createChessPiece('bishop', 'white', 2, 0));
-    chessPieces.push(createChessPiece('queen', 'white', 3, 0));
-    chessPieces.push(createChessPiece('king', 'white', 4, 0));
-    chessPieces.push(createChessPiece('bishop', 'white', 5, 0));
-    chessPieces.push(createChessPiece('knight', 'white', 6, 0));
-    chessPieces.push(createChessPiece('rook', 'white', 7, 0));
+    initializePieces();
     
-    for (let i = 0; i < 8; i++) {
-        chessPieces.push(createChessPiece('pawn', 'white', i, 1));
-    }
-    
-    // Peças pretas
-    chessPieces.push(createChessPiece('rook', 'black', 0, 7));
-    chessPieces.push(createChessPiece('knight', 'black', 1, 7));
-    chessPieces.push(createChessPiece('bishop', 'black', 2, 7));
-    chessPieces.push(createChessPiece('queen', 'black', 3, 7));
-    chessPieces.push(createChessPiece('king', 'black', 4, 7));
-    chessPieces.push(createChessPiece('bishop', 'black', 5, 7));
-    chessPieces.push(createChessPiece('knight', 'black', 6, 7));
-    chessPieces.push(createChessPiece('rook', 'black', 7, 7));
-    
-    for (let i = 0; i < 8; i++) {
-        chessPieces.push(createChessPiece('pawn', 'black', i, 6));
-    }
-    
-    // Todas as peças presentes
-    chessPieces.forEach(piece => scene.add(piece));
-    
-    // Painel de controlo
-    const controlPanel = new THREE.Mesh(
-        new THREE.BoxGeometry(PANEL_WIDTH, PANEL_HEIGHT, PANEL_DEPTH),
-        new THREE.MeshStandardMaterial({ 
-            color: 0x222222,
-            roughness: 0.5,
-            metalness: 0.3
-        })
-    );
-    controlPanel.position.set(0, PANEL_Y, BOARD_SIZE/2 + 10);
-    scene.add(controlPanel);
-    
-
-    const buttonGeometry = new THREE.CylinderGeometry(2, 2, 1, 32);
-    const buttonMaterial = new THREE.MeshStandardMaterial({ color: 0x444444 });
-    const activeButtonMaterial = new THREE.MeshStandardMaterial({ color: 0x00FF00 });
-    
-    // movimento
-    const directions = [
-        { name: 'forward', x: 0, z: -3, rotation: Math.PI/2 },
-        { name: 'back', x: 0, z: 3, rotation: Math.PI/2 },
-        { name: 'left', x: -3, z: 0, rotation: 0 },
-        { name: 'right', x: 3, z: 0, rotation: 0 }
-    ];
-    
-    directions.forEach(dir => {
-        const button = new THREE.Mesh(buttonGeometry, buttonMaterial);
-        button.rotation.x = dir.rotation;
-        button.position.set(
-            dir.x,
-            PANEL_Y,
-            BOARD_SIZE/2 + 10 + dir.z
-        );
-        scene.add(button);
-    });
-    
-    // Botões de ação no centro
-    const actionButton = new THREE.Mesh(
-        new THREE.CylinderGeometry(3, 3, 1, 32),
-        buttonMaterial
-    );
-    actionButton.position.set(0, PANEL_Y, BOARD_SIZE/2 + 10);
-    scene.add(actionButton);
-    
-    // Lighting
-    const ambientLight = new THREE.AmbientLight(0x404040, 0.5);
-    scene.add(ambientLight);
-    
-    const directionalLight = new THREE.DirectionalLight(0xFFFFFF, 0.8);
-    directionalLight.position.set(10, 20, 10);
-    directionalLight.castShadow = true;
-    directionalLight.shadow.mapSize.width = 2048;
-    directionalLight.shadow.mapSize.height = 2048;
-    scene.add(directionalLight);
-    
-    const boardLight = new THREE.SpotLight(0xFFFFFF, 1, 50, Math.PI/4, 0.5);
-    boardLight.position.set(0, 30, 0);
-    boardLight.target.position.set(0, 0, 0);
-    boardLight.castShadow = true;
-    scene.add(boardLight);
-    scene.add(boardLight.target);
-    
-    // Portal para voltar para a nexus room
-    const gateSize = { width: 20, height: 30, depth: 8, thickness: 1.5 };
-    const gateVerticalPos = FLOOR_Y + ROOM_HEIGHT/4;
-    const gateOffset = ROOM_SIZE/2 - 1;
-    
-    scene.add(createGate(
-        { x: 0, y: gateVerticalPos, z: -gateOffset },
-        gateSize,
-        new THREE.MeshStandardMaterial({ color: 0x333333 }),
-        new THREE.MeshStandardMaterial({ color: 0x1A237E }),
-        0x1A237E,
-        0
-    ));
-    
-    // Animação para cada peça de xadez 
+    // animaçao das peças a mover
     const animatePiece = (piece, targetPosition, callback) => {
         const startPosition = piece.position.clone();
-        const duration = 1000; // ms
+        const duration = 500; // ms
         const startTime = Date.now();
         
         const animate = () => {
@@ -312,14 +256,273 @@ export function chessEnvironment(scene) {
         
         animate();
     };
-
+    
+    // Dar highlight dos movimentos que se podem fazer de acordo com regas do jogo (tradicionais)
+    const highlightMoves = (moves) => {
+        chessSquares.forEach(square => {
+            square.material = (square.userData.x + square.userData.y) % 2 === 0 
+                ? lightSquareMat 
+                : darkSquareMat;
+        });
+        
+        moves.forEach(move => {
+            const square = chessSquares.find(s => 
+                s.userData.x === move.x && s.userData.y === move.y
+            );
+            if (square) {
+                square.material = highlightMat;
+            }
+        });
+    };
+    
+    // [Get]: Movimentos possíveis/legais para determinada peça 
+    const getPossibleMoves = (piece) => {
+        const moves = [];
+        const { type, color, boardX, boardZ } = piece.userData;
+        
+        switch(type) {
+            case 'pawn':
+                const direction = color === 'white' ? 1 : -1;
+                if (!getPieceAt(boardX, boardZ + direction)) {
+                    moves.push({ x: boardX, y: boardZ + direction });
+                    if ((color === 'white' && boardZ === 1) || 
+                        (color === 'black' && boardZ === 6)) {
+                        if (!getPieceAt(boardX, boardZ + 2 * direction)) {
+                            moves.push({ x: boardX, y: boardZ + 2 * direction });
+                        }
+                    }
+                }
+                [-1, 1].forEach(dx => {
+                    const target = getPieceAt(boardX + dx, boardZ + direction);
+                    if (target && target.userData.color !== color) {
+                        moves.push({ x: boardX + dx, y: boardZ + direction });
+                    }
+                });
+                break;
+                
+            case 'rook':
+                for (let i = 0; i < 8; i++) {
+                    if (i !== boardX) moves.push({ x: i, y: boardZ });
+                    if (i !== boardZ) moves.push({ x: boardX, y: i });
+                }
+                break;
+                
+            case 'knight':
+                const knightMoves = [
+                    {dx: 2, dy: 1}, {dx: 2, dy: -1},
+                    {dx: -2, dy: 1}, {dx: -2, dy: -1},
+                    {dx: 1, dy: 2}, {dx: 1, dy: -2},
+                    {dx: -1, dy: 2}, {dx: -1, dy: -2}
+                ];
+                knightMoves.forEach(move => {
+                    const x = boardX + move.dx;
+                    const y = boardZ + move.dy;
+                    if (x >= 0 && x < 8 && y >= 0 && y < 8) {
+                        const target = getPieceAt(x, y);
+                        if (!target || target.userData.color !== color) {
+                            moves.push({ x, y });
+                        }
+                    }
+                });
+                break;
+                
+            case 'bishop':
+                for (let i = 1; i < 8; i++) {
+                    if (boardX + i < 8 && boardZ + i < 8) moves.push({ x: boardX + i, y: boardZ + i });
+                    if (boardX - i >= 0 && boardZ + i < 8) moves.push({ x: boardX - i, y: boardZ + i });
+                    if (boardX + i < 8 && boardZ - i >= 0) moves.push({ x: boardX + i, y: boardZ - i });
+                    if (boardX - i >= 0 && boardZ - i >= 0) moves.push({ x: boardX - i, y: boardZ - i });
+                }
+                break;
+                
+            case 'queen':
+                for (let i = 0; i < 8; i++) {
+                    if (i !== boardX) moves.push({ x: i, y: boardZ });
+                    if (i !== boardZ) moves.push({ x: boardX, y: i });
+                }
+                for (let i = 1; i < 8; i++) {
+                    if (boardX + i < 8 && boardZ + i < 8) moves.push({ x: boardX + i, y: boardZ + i });
+                    if (boardX - i >= 0 && boardZ + i < 8) moves.push({ x: boardX - i, y: boardZ + i });
+                    if (boardX + i < 8 && boardZ - i >= 0) moves.push({ x: boardX + i, y: boardZ - i });
+                    if (boardX - i >= 0 && boardZ - i >= 0) moves.push({ x: boardX - i, y: boardZ - i });
+                }
+                break;
+                
+            case 'king':
+                for (let dx = -1; dx <= 1; dx++) {
+                    for (let dy = -1; dy <= 1; dy++) {
+                        if (dx === 0 && dy === 0) continue;
+                        const x = boardX + dx;
+                        const y = boardZ + dy;
+                        if (x >= 0 && x < 8 && y >= 0 && y < 8) {
+                            const target = getPieceAt(x, y);
+                            if (!target || target.userData.color !== color) {
+                                moves.push({ x, y });
+                            }
+                        }
+                    }
+                }
+                break;
+        }
+        
+        return moves.filter(move => {
+            const target = getPieceAt(move.x, move.y);
+            return !target || target.userData.color !== color;
+        });
+    };
+    
+    // [GET] Peças em coordenadas do tabuleiro
+    const getPieceAt = (x, y) => {
+        return gamePieces.find(p => 
+            p.userData.boardX === x && 
+            p.userData.boardZ === y &&
+            !p.userData.captured
+        );
+    };
+    
+    // Mover peça para nova posição do tabuleiro
+    const movePiece = (piece, newX, newY) => {
+        const targetPiece = getPieceAt(newX, newY);
+        if (targetPiece) {
+            capturePiece(targetPiece);
+        }
+        
+        piece.userData.boardX = newX;
+        piece.userData.boardZ = newY;
+        
+        const targetPosition = new THREE.Vector3(
+            (newX - 3.5) * SQUARE_SIZE,
+            FLOOR_Y + PIECE_HEIGHT/2,
+            (newY - 3.5) * SQUARE_SIZE
+        );
+        
+        animatePiece(piece, targetPosition, () => {
+            currentPlayer = currentPlayer === 'white' ? 'black' : 'white';
+            selectedPiece = null;
+            highlightMoves([]);
+        });
+    };
+    
+    // Capturar uma peça (comer)
+    const capturePiece = (piece) => {
+        piece.userData.captured = true;
+        capturedPieces.push(piece);
+        
+        const capturedIndex = capturedPieces.filter(p => p.userData.color === piece.userData.color).length;
+        const offsetX = piece.userData.color === 'white' ? -4 : 4;
+        
+        animatePiece(piece, new THREE.Vector3(
+            offsetX + (capturedIndex % 4) * 1.5,
+            FLOOR_Y + PIECE_HEIGHT/2,
+            BOARD_SIZE/2 + 5 + Math.floor(capturedIndex / 4) * 1.5
+        ));
+    };
+    
+    // Interação com rato
+    const handleClick = (event) => {
+        if (event.button !== 0) return;
+        
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2(
+            (event.clientX / window.innerWidth) * 2 - 1,
+            -(event.clientY / window.innerHeight) * 2 + 1
+        );
+        
+        raycaster.setFromCamera(mouse, currentCamera);
+        const intersects = raycaster.intersectObjects(scene.children, true);
+        
+        if (intersects.length > 0) {
+            const clickedObj = intersects[0].object;
+            
+            const clickedPiece = gamePieces.find(p => 
+                p === clickedObj || p.children.includes(clickedObj)
+            );
+            
+            if (clickedPiece) {
+                if (clickedPiece.userData.color === currentPlayer) {
+                    selectedPiece = clickedPiece;
+                    const moves = getPossibleMoves(selectedPiece);
+                    highlightMoves(moves);
+                }
+                else if (selectedPiece) {
+                    const targetSquare = chessSquares.find(s => 
+                        s === clickedObj || s === clickedObj.parent
+                    );
+                    
+                    if (targetSquare) {
+                        const moves = getPossibleMoves(selectedPiece);
+                        const move = moves.find(m => 
+                            m.x === targetSquare.userData.x && 
+                            m.y === targetSquare.userData.y
+                        );
+                        
+                        if (move) {
+                            movePiece(selectedPiece, move.x, move.y);
+                        }
+                    }
+                }
+            }
+            else if (chessSquares.includes(clickedObj)) {
+                if (selectedPiece) {
+                    const moves = getPossibleMoves(selectedPiece);
+                    const move = moves.find(m => 
+                        m.x === clickedObj.userData.x && 
+                        m.y === clickedObj.userData.y
+                    );
+                    
+                    if (move) {
+                        movePiece(selectedPiece, move.x, move.y);
+                    }
+                }
+            }
+        }
+    };
+    
+    window.addEventListener('click', handleClick);
+    
+    // Efeitos de luz (lighting)
+    const ambientLight = new THREE.AmbientLight(0x404040, 0.5);
+    scene.add(ambientLight);
+    
+    const directionalLight = new THREE.DirectionalLight(0xFFFFFF, 0.8);
+    directionalLight.position.set(10, 20, 10);
+    directionalLight.castShadow = true;
+    scene.add(directionalLight);
+    
+    const boardLight = new THREE.SpotLight(0xFFFFFF, 1, 50, Math.PI/4, 0.5);
+    boardLight.position.set(0, 30, 0);
+    boardLight.target.position.set(0, 0, 0);
+    boardLight.castShadow = true;
+    scene.add(boardLight);
+    scene.add(boardLight.target);
+    
+    // Voltar para a sala da Nexus
+    const gateSize = { width: 20, height: 30, depth: 8, thickness: 1.5 };
+    const gateVerticalPos = FLOOR_Y + ROOM_HEIGHT/4;
+    const gateOffset = ROOM_SIZE/2 - 1;
+    
+    scene.add(createGate(
+        { x: 0, y: gateVerticalPos, z: -gateOffset },
+        gateSize,
+        new THREE.MeshStandardMaterial({ color: 0x333333 }),
+        new THREE.MeshStandardMaterial({ color: 0x1A237E }),
+        0x1A237E,
+        0
+    ));
+    
+    // Função para limpar o listener do click do rato (interação)
+    const cleanup = () => {
+        window.removeEventListener('click', handleClick);
+    };
+    
     return { 
-    ROOM_SIZE, 
-    FLOOR_Y,
-    chessPieces,
-    animatePiece,
-    SQUARE_SIZE,
-    BOARD_SIZE,
-    scene
+        ROOM_SIZE, 
+        FLOOR_Y,
+        chessPieces: gamePieces,
+        animatePiece,
+        SQUARE_SIZE,
+        BOARD_SIZE,
+        scene,
+        cleanup
     };
 }

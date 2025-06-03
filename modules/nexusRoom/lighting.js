@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 
 export function nexusLights(scene) {
-    // Redução de luz ambiente para fazer o ambiente mais escuro
+    // Redução de luz ambiente para fazer o ambiente mais escuro e sombrio
     const ambientLight = new THREE.AmbientLight(0x222222, 0.3); // Ambiente mais escuro
     scene.add(ambientLight); 
 

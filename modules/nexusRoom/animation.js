@@ -15,12 +15,6 @@ export function animateNexusRoom(params) {
         ...restParams
     } = params;
 
-    // let {
-    //     moveSpeed,
-    //     verticalVelocity,
-    //     isGrounded,
-    //     moveState
-    // } = restParams;
     let moveSpeed = restParams.moveSpeed;
     let moveState = restParams.moveState;
 
@@ -46,7 +40,7 @@ export function animateNexusRoom(params) {
             nexus.userData.animate(elapsedTime);
         }
 
-        // Physics calculations
+        // Calculo de salto (physiscs)
         if (restParams.moveState.isJumping) {
             restParams.verticalVelocity -= restParams.GRAVITY * delta * 60;
             cameraRig.position.y += restParams.verticalVelocity * delta * 60;
@@ -65,7 +59,7 @@ export function animateNexusRoom(params) {
             }
         }
 
-        // Movement
+        // Movimentação da personagem ~(primeira pessoa)
         const direction = new THREE.Vector3();
         const cameraDirection = new THREE.Vector3();
         camera.getWorldDirection(cameraDirection);

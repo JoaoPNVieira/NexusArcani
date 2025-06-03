@@ -116,7 +116,7 @@ export function createNexus(radius = 6) {
     orbLight.position.set(0, 0, 0);
     nexusGroup.add(orbLight);
 
-    // Add light halo effect
+    // Halo effect
     const lightHalo = new THREE.Mesh(
         new THREE.SphereGeometry(radius * 1.5, 32, 32),
         new THREE.MeshBasicMaterial({
