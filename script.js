@@ -1,11 +1,16 @@
 import * as THREE from 'three';
 import { allSetups, GameState } from './modules/modularIndex.js';
 
-function initNexusRoom() {
-    // Clear previous scene if exists
-    if (GameState.scenes.nexusRoom) {
-        GameState.scenes.nexusRoom.dispose();
+let currentScene, currentCamera, currentRenderer, currentCameraRig;
+
+function cleanupPreviousEnvironment() {
+    if (currentRenderer) {
+        document.body.removeChild(currentRenderer.domElement);
     }
+}
+
+function initNexusRoom() {
+    cleanupPreviousEnvironment();
 
     const { scene, renderer } = allSetups.main.setupScene();
     const { ROOM_SIZE, ROOM_HEIGHT, FLOOR_Y } = allSetups.nexusRoom.nexusEnvironment(scene);
@@ -41,35 +46,21 @@ function initNexusRoom() {
         ...movementParams
     });
 
-    // Store references
-    GameState.scenes.nexusRoom = scene;
-    GameState.cameras.nexusRoom = camera;
-    GameState.renderers.nexusRoom = renderer;
-    GameState.cameraRigs.nexusRoom = cameraRig;
+    currentScene = scene;
+    currentCamera = camera;
+    currentRenderer = renderer;
+    currentCameraRig = cameraRig;
+    GameState.currentEnvironment = 'nexusRoom';
 
-    // Add keyboard listener for environment switching
-    document.addEventListener('keydown', (e) => {
-        if (e.code === 'Digit1') {
-            initChessGame();
-        }
-    });
-
-    window.addEventListener('resize', () => {
-        camera.aspect = window.innerWidth/window.innerHeight;
-        camera.updateProjectionMatrix();
-        renderer.setSize(window.innerWidth, window.innerHeight);
-    });
+    document.addEventListener('keydown', handleEnvironmentSwitch);
 }
 
 function initChessGame() {
-    // Clear previous scene if exists
-    if (GameState.scenes.chessGame) {
-        GameState.scenes.chessGame.dispose();
-    }
+    cleanupPreviousEnvironment();
 
     const { scene, renderer } = allSetups.main.setupScene();
-    const { ROOM_SIZE, FLOOR_Y } = allSetups.chessGame.chessEnvironment(scene);
-    const { camera, cameraRig, pitchObject, yawObject } = allSetups.main.setupCamera(scene, FLOOR_Y);
+    const chessEnv = allSetups.chessGame.chessEnvironment(scene);
+    const { camera, cameraRig, pitchObject, yawObject } = allSetups.main.setupCamera(scene, chessEnv.FLOOR_Y);
     
     const movementParams = allSetups.main.setupMovement();
     
@@ -77,40 +68,40 @@ function initChessGame() {
         cameraRig,
         camera,
         renderer,
-        ROOM_SIZE,
-        FLOOR_Y,
+        ROOM_SIZE: chessEnv.ROOM_SIZE,
+        FLOOR_Y: chessEnv.FLOOR_Y,
         ...movementParams
     });
     
-    const clock = new THREE.Clock();
-    
-    // Simple animation loop for chess game
     function animate() {
         requestAnimationFrame(animate);
         renderer.render(scene, camera);
     }
     animate();
 
-    // Store references
-    GameState.scenes.chessGame = scene;
-    GameState.cameras.chessGame = camera;
-    GameState.renderers.chessGame = renderer;
-    GameState.cameraRigs.chessGame = cameraRig;
+    currentScene = scene;
+    currentCamera = camera;
+    currentRenderer = renderer;
+    currentCameraRig = cameraRig;
     GameState.currentEnvironment = 'chessGame';
 
-    // Add keyboard listener for environment switching
-    document.addEventListener('keydown', (e) => {
-        if (e.code === 'Digit0') {
-            initNexusRoom();
-        }
-    });
-
-    window.addEventListener('resize', () => {
-        camera.aspect = window.innerWidth/window.innerHeight;
-        camera.updateProjectionMatrix();
-        renderer.setSize(window.innerWidth, window.innerHeight);
-    });
+    document.addEventListener('keydown', handleEnvironmentSwitch);
 }
 
-// Initialize with Nexus Room by default
+function handleEnvironmentSwitch(e) {
+    if (e.code === 'Digit1' && GameState.currentEnvironment !== 'chessGame') {
+        initChessGame();
+    } else if (e.code === 'Digit0' && GameState.currentEnvironment !== 'nexusRoom') {
+        initNexusRoom();
+    }
+}
+
 initNexusRoom();
+
+window.addEventListener('resize', () => {
+    if (currentCamera && currentRenderer) {
+        currentCamera.aspect = window.innerWidth / window.innerHeight;
+        currentCamera.updateProjectionMatrix();
+        currentRenderer.setSize(window.innerWidth, window.innerHeight);
+    }
+});
