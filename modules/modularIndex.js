@@ -6,12 +6,13 @@ import { setupInput } from './main/userInput.js';
 
 // NEXUS ROOM IMPORTS
 import { nexusEnvironment } from './nexusRoom/environment.js';
-import { nexusLights } from './nexusRoom/lighting.js';
-import { createNexus } from './nexusRoom/nexusOrb.js';
+import { nexusLights }      from './nexusRoom/lighting.js';
+import { createNexus }      from './nexusRoom/nexusOrb.js';
 import { animateNexusRoom } from './nexusRoom/animation.js';
 
 // CHESS GAME IMPORTS
 import { chessEnvironment } from './chessGame/environment.js';
+import { ChessGame }        from './chessGame/chessLogic.js';
 
 export const allSetups = {
     main: {
@@ -27,6 +28,7 @@ export const allSetups = {
         animateNexusRoom
     },
     chessGame: {
+        ChessGame,
         chessEnvironment
     }
 };

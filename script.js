@@ -59,24 +59,32 @@ function initChessGame() {
     cleanupPreviousEnvironment();
 
     const { scene, renderer } = allSetups.main.setupScene();
-    const chessEnv = allSetups.chessGame.chessEnvironment(scene);
-    const { camera, cameraRig, pitchObject, yawObject } = allSetups.main.setupCamera(scene, chessEnv.FLOOR_Y);
+    
+    // Initialize chess environment first to get FLOOR_Y
+    const chessEnv = allSetups.chessGame.chessEnvironment(scene, null); // Pass null for camera temporarily
+    const FLOOR_Y = chessEnv.FLOOR_Y;
+    
+    // Now setup camera with the correct FLOOR_Y (single declaration)
+    const { camera, cameraRig, pitchObject, yawObject } = allSetups.main.setupCamera(scene, FLOOR_Y);
+    
+    // Update chess environment with the actual camera
+    chessEnv.chessGame.setCamera(camera);
     
     const movementParams = allSetups.main.setupMovement();
     
-    // Configurar input p/movimento
+    // Setup input
     const inputParams = {
         cameraRig,
         camera,
         renderer,
         ROOM_SIZE: chessEnv.ROOM_SIZE,
-        FLOOR_Y: chessEnv.FLOOR_Y,
+        FLOOR_Y,
         ...movementParams
     };
     
     allSetups.main.setupInput(inputParams);
     
-    // Loop de animação (movimento)
+    // Animation loop
     const clock = new THREE.Clock();
     const movementDamping = 0.2;
     const currentVelocity = new THREE.Vector3();
@@ -86,7 +94,7 @@ function initChessGame() {
         
         const delta = clock.getDelta();
         
-        // Moovimento: 
+        // Movement
         const direction = new THREE.Vector3();
         const cameraDirection = new THREE.Vector3();
         camera.getWorldDirection(cameraDirection);
@@ -109,7 +117,7 @@ function initChessGame() {
             currentVelocity.lerp(new THREE.Vector3(), movementDamping);
         }
 
-        // Check de limites
+        // Boundary check
         const boundary = chessEnv.ROOM_SIZE / 2 - 0.5;
         cameraRig.position.x = THREE.MathUtils.clamp(cameraRig.position.x, -boundary, boundary);
         cameraRig.position.z = THREE.MathUtils.clamp(cameraRig.position.z, -boundary, boundary);
@@ -119,7 +127,7 @@ function initChessGame() {
     
     animate();
 
-    // Referencias salvaguardadas
+    // Save references
     currentScene = scene;
     currentCamera = camera;
     currentRenderer = renderer;
@@ -127,7 +135,6 @@ function initChessGame() {
     GameState.currentEnvironment = 'chessGame';
     GameState.cleanupChess = chessEnv.cleanup;
 
-    // Keyboard listener para a troca de ambiente (necessário)
     document.addEventListener('keydown', handleEnvironmentSwitch);
 }
 
