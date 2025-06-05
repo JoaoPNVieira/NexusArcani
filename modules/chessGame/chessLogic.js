@@ -9,8 +9,8 @@ export class ChessGame {
         this.PIECE_HEIGHT = PIECE_HEIGHT;
         this.camera = null;
         
-        // Realistic height parameters
-        this.PIECE_BASE_HEIGHT = PIECE_HEIGHT * 0.45;
+        // Parametros realistas
+        this.PIECE_BASE_HEIGHT = 1.2;
         this.PIECE_LIFT_AMOUNT = PIECE_HEIGHT * 0.25;
         this.BOARD_SURFACE_OFFSET = 0.5;
         
@@ -20,7 +20,7 @@ export class ChessGame {
         this.capturedPieces = [];
         this.chessSquares = [];
         
-        // Materials
+        // Materiais
         this.lightSquareMat = new THREE.MeshStandardMaterial({ color: 0xF0D9B5 });
         this.darkSquareMat = new THREE.MeshStandardMaterial({ color: 0xB58863 });
         this.highlightMat = new THREE.MeshStandardMaterial({ 
@@ -83,6 +83,13 @@ export class ChessGame {
             (z - 3.5) * this.SQUARE_SIZE
         );
         
+        // Orientação de peças 
+        if (color === 'white') {
+            pieceGroup.rotation.y = Math.PI;  
+        } else {
+            pieceGroup.rotation.y = 0;
+        }
+        
         pieceGroup.userData = {
             type,
             color,
@@ -94,6 +101,7 @@ export class ChessGame {
         
         const pieceMat = color === 'white' ? this.whitePieceMat : this.blackPieceMat;
         
+        // Base para todas as peças
         const baseHeight = this.PIECE_HEIGHT * 0.15;
         const base = new THREE.Mesh(
             new THREE.CylinderGeometry(
@@ -107,103 +115,255 @@ export class ChessGame {
         base.position.y = -baseHeight/2;
         pieceGroup.add(base);
         
-        let geometry;
+        // Modelos de peças
         switch(type) {
             case 'pawn':
-                geometry = new THREE.CylinderGeometry(
-                    this.SQUARE_SIZE/4, 
-                    this.SQUARE_SIZE/3, 
-                    this.PIECE_HEIGHT * 0.6, 
-                    16
+                const pawnBody = new THREE.Mesh(
+                    new THREE.CylinderGeometry(
+                        this.SQUARE_SIZE/4, 
+                        this.SQUARE_SIZE/3, 
+                        this.PIECE_HEIGHT * 0.6, 
+                        16
+                    ),
+                    pieceMat
                 );
+                pawnBody.position.y = this.PIECE_HEIGHT * 0.3;
+                
+                const pawnTop = new THREE.Mesh(
+                    new THREE.SphereGeometry(
+                        this.SQUARE_SIZE/4,
+                        16,
+                        16,
+                        0,
+                        Math.PI * 2,
+                        0,
+                        Math.PI/2
+                    ),
+                    pieceMat
+                );
+                pawnTop.position.y = this.PIECE_HEIGHT * 0.6;
+                
+                pieceGroup.add(pawnBody);
+                pieceGroup.add(pawnTop);
                 break;
                 
             case 'rook':
-                geometry = new THREE.BoxGeometry(
-                    this.SQUARE_SIZE/2.5, 
-                    this.PIECE_HEIGHT * 0.7, 
-                    this.SQUARE_SIZE/2.5
+                const rookBase = new THREE.Mesh(
+                    new THREE.CylinderGeometry(
+                        this.SQUARE_SIZE/3,
+                        this.SQUARE_SIZE/3,
+                        this.PIECE_HEIGHT * 0.5,
+                        16
+                    ),
+                    pieceMat
                 );
+                rookBase.position.y = this.PIECE_HEIGHT * 0.25;
+                
+                const crenelHeight = this.PIECE_HEIGHT * 0.2;
+                const crenelWidth = this.SQUARE_SIZE/6;
+                for (let i = 0; i < 4; i++) {
+                    const crenel = new THREE.Mesh(
+                        new THREE.BoxGeometry(
+                            crenelWidth,
+                            crenelHeight,
+                            crenelWidth
+                        ),
+                        pieceMat
+                    );
+                    crenel.position.y = this.PIECE_HEIGHT * 0.5 + crenelHeight/2;
+                    crenel.position.x = (this.SQUARE_SIZE/3 - crenelWidth/2) * Math.cos(i * Math.PI/2);
+                    crenel.position.z = (this.SQUARE_SIZE/3 - crenelWidth/2) * Math.sin(i * Math.PI/2);
+                    pieceGroup.add(crenel);
+                }
+                
+                pieceGroup.add(rookBase);
                 break;
                 
             case 'knight':
-                const head = new THREE.Mesh(
-                    new THREE.SphereGeometry(this.SQUARE_SIZE/3, 16, 16),
+                const knightBase = new THREE.Mesh(
+                    new THREE.CylinderGeometry(
+                        this.SQUARE_SIZE/3,
+                        this.SQUARE_SIZE/2.5,
+                        this.PIECE_HEIGHT * 0.4,
+                        16
+                    ),
                     pieceMat
                 );
-                head.position.y = this.PIECE_HEIGHT * 0.4;
-                head.position.z = -this.SQUARE_SIZE/4;
-                pieceGroup.add(head);
+                knightBase.position.y = this.PIECE_HEIGHT * 0.2;
                 
-                geometry = new THREE.CylinderGeometry(
-                    this.SQUARE_SIZE/3, 
-                    this.SQUARE_SIZE/2, 
-                    this.PIECE_HEIGHT * 0.5, 
-                    16
+                const head = new THREE.Mesh(
+                    new THREE.SphereGeometry(
+                        this.SQUARE_SIZE/3.5,
+                        16,
+                        16,
+                        0,
+                        Math.PI * 2,
+                        0,
+                        Math.PI/1.5
+                    ),
+                    pieceMat
                 );
+                head.position.y = this.PIECE_HEIGHT * 0.6;
+                head.position.z = -this.SQUARE_SIZE/4;
+                
+                const earGeometry = new THREE.ConeGeometry(
+                    this.SQUARE_SIZE/8,
+                    this.SQUARE_SIZE/5,
+                    8
+                );
+                const leftEar = new THREE.Mesh(earGeometry, pieceMat);
+                leftEar.position.set(
+                    -this.SQUARE_SIZE/6,
+                    this.PIECE_HEIGHT * 0.75,
+                    -this.SQUARE_SIZE/4
+                );
+                leftEar.rotation.x = -Math.PI/4;
+                
+                const rightEar = new THREE.Mesh(earGeometry, pieceMat);
+                rightEar.position.set(
+                    this.SQUARE_SIZE/6,
+                    this.PIECE_HEIGHT * 0.75,
+                    -this.SQUARE_SIZE/4
+                );
+                rightEar.rotation.x = -Math.PI/4;
+                
+                pieceGroup.add(knightBase);
+                pieceGroup.add(head);
+                pieceGroup.add(leftEar);
+                pieceGroup.add(rightEar);
                 break;
                 
             case 'bishop':
-                geometry = new THREE.ConeGeometry(
-                    this.SQUARE_SIZE/3, 
-                    this.PIECE_HEIGHT * 0.8, 
-                    16
-                );
-                break;
-                
-            case 'queen':
-                geometry = new THREE.SphereGeometry(
-                    this.SQUARE_SIZE/3, 
-                    32, 
-                    32
-                );
-                const crown = new THREE.Mesh(
+                const bishopBody = new THREE.Mesh(
                     new THREE.ConeGeometry(
-                        this.SQUARE_SIZE/4, 
-                        this.PIECE_HEIGHT * 0.4, 
+                        this.SQUARE_SIZE/3,
+                        this.PIECE_HEIGHT * 0.8,
+                        16
+                    ),
+                    pieceMat
+                );
+                bishopBody.position.y = this.PIECE_HEIGHT * 0.4;
+                
+                const slit = new THREE.Mesh(
+                    new THREE.BoxGeometry(
+                        this.SQUARE_SIZE/10,
+                        this.PIECE_HEIGHT * 0.6,
+                        this.SQUARE_SIZE/4
+                    ),
+                    new THREE.MeshStandardMaterial({ color: 0x000000 })
+                );
+                slit.position.y = this.PIECE_HEIGHT * 0.4;
+                slit.position.z = this.SQUARE_SIZE/5;
+                
+                const top = new THREE.Mesh(
+                    new THREE.SphereGeometry(
+                        this.SQUARE_SIZE/8,
+                        8,
                         8
                     ),
                     pieceMat
                 );
-                crown.position.y = this.PIECE_HEIGHT * 0.35;
-                pieceGroup.add(crown);
+                top.position.y = this.PIECE_HEIGHT * 0.8;
+                
+                pieceGroup.add(bishopBody);
+                pieceGroup.add(slit);
+                pieceGroup.add(top);
                 break;
                 
-            case 'king':
-                geometry = new THREE.CylinderGeometry(
-                    this.SQUARE_SIZE/3.5, 
-                    this.SQUARE_SIZE/3, 
-                    this.PIECE_HEIGHT * 0.7, 
-                    16
-                );
-                const crossBase = new THREE.Mesh(
-                    new THREE.BoxGeometry(
-                        this.SQUARE_SIZE/6, 
-                        this.PIECE_HEIGHT * 0.1, 
-                        this.SQUARE_SIZE/6
+            case 'queen':
+                const queenBody = new THREE.Mesh(
+                    new THREE.SphereGeometry(
+                        this.SQUARE_SIZE/3,
+                        16,
+                        16,
+                        0,
+                        Math.PI * 2,
+                        Math.PI/4,
+                        Math.PI/1.5
                     ),
                     pieceMat
                 );
-                crossBase.position.y = this.PIECE_HEIGHT * 0.45;
-                pieceGroup.add(crossBase);
+                queenBody.position.y = this.PIECE_HEIGHT * 0.3;
                 
-                const cross = new THREE.Mesh(
+                const crownBase = new THREE.Mesh(
+                    new THREE.CylinderGeometry(
+                        this.SQUARE_SIZE/4,
+                        this.SQUARE_SIZE/5,
+                        this.PIECE_HEIGHT * 0.2,
+                        8
+                    ),
+                    pieceMat
+                );
+                crownBase.position.y = this.PIECE_HEIGHT * 0.5;
+
+                const pointHeight = this.PIECE_HEIGHT * 0.3;
+                for (let i = 0; i < 5; i++) {
+                    const point = new THREE.Mesh(
+                        new THREE.ConeGeometry(
+                            this.SQUARE_SIZE/10,
+                            pointHeight,
+                            4
+                        ),
+                        pieceMat
+                    );
+                    point.position.y = this.PIECE_HEIGHT * 0.6 + pointHeight/2;
+                    point.position.x = (this.SQUARE_SIZE/4) * Math.cos(i * Math.PI * 0.4);
+                    point.position.z = (this.SQUARE_SIZE/4) * Math.sin(i * Math.PI * 0.4);
+                    point.rotation.y = i * Math.PI * 0.4;
+                    pieceGroup.add(point);
+                }
+                
+                pieceGroup.add(queenBody);
+                pieceGroup.add(crownBase);
+                break;
+                
+            case 'king':
+                const kingBody = new THREE.Mesh(
+                    new THREE.CylinderGeometry(
+                        this.SQUARE_SIZE/3.5,
+                        this.SQUARE_SIZE/3,
+                        this.PIECE_HEIGHT * 0.7,
+                        16
+                    ),
+                    pieceMat
+                );
+                kingBody.position.y = this.PIECE_HEIGHT * 0.35;
+
+                const crossBase = new THREE.Mesh(
                     new THREE.BoxGeometry(
-                        this.SQUARE_SIZE/8, 
-                        this.PIECE_HEIGHT * 0.3, 
+                        this.SQUARE_SIZE/2.5,
+                        this.PIECE_HEIGHT * 0.1,
+                        this.SQUARE_SIZE/2.5
+                    ),
+                    pieceMat
+                );
+                crossBase.position.y = this.PIECE_HEIGHT * 0.75;
+
+                const crossVert = new THREE.Mesh(
+                    new THREE.BoxGeometry(
+                        this.SQUARE_SIZE/8,
+                        this.PIECE_HEIGHT * 0.3,
                         this.SQUARE_SIZE/8
                     ),
                     pieceMat
                 );
-                cross.position.y = this.PIECE_HEIGHT * 0.6;
-                pieceGroup.add(cross);
+                crossVert.position.y = this.PIECE_HEIGHT * 0.9;
+
+                const crossHoriz = new THREE.Mesh(
+                    new THREE.BoxGeometry(
+                        this.SQUARE_SIZE/4,
+                        this.PIECE_HEIGHT * 0.1,
+                        this.SQUARE_SIZE/8
+                    ),
+                    pieceMat
+                );
+                crossHoriz.position.y = this.PIECE_HEIGHT * 0.9;
+                
+                pieceGroup.add(kingBody);
+                pieceGroup.add(crossBase);
+                pieceGroup.add(crossVert);
+                pieceGroup.add(crossHoriz);
                 break;
-        }
-        
-        if (geometry) {
-            const piece = new THREE.Mesh(geometry, pieceMat);
-            piece.position.y = this.PIECE_HEIGHT * 0.25;
-            pieceGroup.add(piece);
         }
         
         return pieceGroup;

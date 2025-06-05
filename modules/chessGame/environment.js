@@ -7,15 +7,13 @@ export function chessEnvironment(scene, camera) {
     const ROOM_HEIGHT = 50;
     const FLOOR_Y = -ROOM_HEIGHT / 2;
     
-    // Chess board dimensions
+    // Dimensões do tabuleiro
     const BOARD_SIZE = 40;
     const SQUARE_SIZE = BOARD_SIZE / 8;
     const PIECE_HEIGHT = SQUARE_SIZE * 1.5;
     
-    // Create chess game instance
     const chessGame = new ChessGame(scene, SQUARE_SIZE, BOARD_SIZE, FLOOR_Y, PIECE_HEIGHT);
-    
-    // Create room
+
     const room = new THREE.Mesh(
         new THREE.BoxGeometry(ROOM_SIZE, ROOM_HEIGHT, ROOM_SIZE),
         new THREE.MeshStandardMaterial({ 
@@ -27,7 +25,7 @@ export function chessEnvironment(scene, camera) {
     );
     scene.add(room);
     
-    // Create floor
+    // Chão:
     const floor = new THREE.Mesh(
         new THREE.PlaneGeometry(ROOM_SIZE, ROOM_SIZE),
         new THREE.MeshStandardMaterial({ 
@@ -40,12 +38,12 @@ export function chessEnvironment(scene, camera) {
     floor.position.y = FLOOR_Y + 0.1;
     scene.add(floor);
     
-    // Chess board group positioning
+    
     const boardGroup = new THREE.Group();
-    boardGroup.position.y = FLOOR_Y + 0.1;  // Adjust this to raise/lower entire board
+    boardGroup.position.y = FLOOR_Y + 0.1;  
     scene.add(boardGroup);
     
-    // Board surface (adjust last parameter for thickness)
+    // Superficie do tabuleiro
     const boardSurface = new THREE.Mesh(
         new THREE.BoxGeometry(BOARD_SIZE + 2, 0.2, BOARD_SIZE + 2),
         new THREE.MeshStandardMaterial({ 
@@ -54,11 +52,8 @@ export function chessEnvironment(scene, camera) {
         })
     );
     boardGroup.add(boardSurface);
-    
-    // Create chess board
+
     chessGame.createBoard(boardGroup);
-    
-    // Initialize pieces
     chessGame.initializePieces();
     
     // Lighting
@@ -77,7 +72,7 @@ export function chessEnvironment(scene, camera) {
     scene.add(boardLight);
     scene.add(boardLight.target);
     
-    // Gate to return to nexus
+    // Portal
     const gateSize = { width: 20, height: 30, depth: 8, thickness: 1.5 };
     const gateVerticalPos = FLOOR_Y + ROOM_HEIGHT/4;
     const gateOffset = ROOM_SIZE/2 - 1;
@@ -91,7 +86,7 @@ export function chessEnvironment(scene, camera) {
         0
     ));
     
-    // Click handler
+    // Handler para o click
     const handleClick = (event) => chessGame.handleClick(event, camera);
     window.addEventListener('click', handleClick);
     
