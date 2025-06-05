@@ -33,14 +33,14 @@ export class ChessGame {
         
         this.whitePieceMat = new THREE.MeshStandardMaterial({ 
             color: 0xFFFFFF,
-            roughness: 0.1,
-            metalness: 0.9
+            roughness: 0.3,
+            metalness: 0.4
         });
         
         this.blackPieceMat = new THREE.MeshStandardMaterial({ 
             color: 0xFFD700,
             roughness: 0.1,
-            metalness: 0.9
+            metalness: 0.8
         });
         
         this.selectedMat = new THREE.MeshStandardMaterial({
