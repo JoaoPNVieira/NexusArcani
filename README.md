@@ -57,6 +57,20 @@
   - Movimento suave de peças de xadrez
   - Halo de luz e emissividade variável.
 
+### 🔁 Sources
+
+**Textures**  
+- [3dtextures.me](https://3dtextures.me/)  
+  Free, high-quality seamless PBR textures for 3D projects (CC0 license).
+
+**3D Models**  
+- [PBR Stylized Statue Mage Wizard by Ignas (Sketchfab)](https://sketchfab.com/3d-models/pbr-stylized-statue-mage-wizard-f0293fab679e44d1bfa38798e06db307)  
+  - Ignas: Wizard Statue  
+  - Tror: Queen, King, Knight, Pawn, Bishop chess pieces  
+  - Gnossiennes: Rook chess piece  
+
+**Reference Book**  
+- [Learning Three.js: The JavaScript 3D Library for WebGL (Second Edition) (PDF)](https://aitskadapa.ac.in/e-books/CSE/JAVA/Learning%20Three.js_%20The%20JavaScript%203D%20Library%20for%20WebGL%20-%20Second%20Edition%20(%20PDFDrive%20).pdf)
 ---
 
 ## 📁 Estrutura do Projeto
