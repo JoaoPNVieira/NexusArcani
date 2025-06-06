@@ -2,8 +2,6 @@
 
 > Uma experiência 3D modular desenvolvida com **Three.js**, que combina ambientes arquitetónicos, iluminação dinâmica e interações jogáveis.
 
-![Pré-visualização](https://joaopnvieira.github.io/NexusArcani/)
-
 ---
 
 ## 🌐 Demonstração Online
@@ -88,6 +86,7 @@
     animation.js      # Loop de animação e lógica para a nexusRoom
     lighting.js       # Luzes globais com fog
   /chessGame
-    environment.js    # Tabuleiro de xadrez e lógica de jogo
+    environment.js    # Sala de jogo de xadrez
+    chessLogic.js     # Lógica de jogo de xadrez
 script.js             # Lógica de troca de ambientes
 modularIndex.js       # Agregador modular de imports
